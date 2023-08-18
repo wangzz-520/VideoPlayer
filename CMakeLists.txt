@@ -47,15 +47,23 @@ SET(FFMPEG_LIB swscale.lib
 
 SET(SOURCES main.cpp MainWidget.h 
 					MainWidget.cpp
+					MainWidget.ui
 					DecodeThread.h
-					DecodeThread.cpp)
-
-
+					DecodeThread.cpp
+					WCustomSlider.h
+					WCustomSlider.cpp
+					WCtrlBarWidget.h
+					WCtrlBarWidget.cpp
+					WCtrlBarWidget.ui
+					)
 
 qt5_wrap_cpp(MOC_SRC MainWidget.h
-					DecodeThread.h)
+					DecodeThread.h
+					WCtrlBarWidget.h
+					WCustomSlider.h)
 
-qt5_wrap_ui(UI_SRC MainWidget.ui)
+qt5_wrap_ui(UI_SRC MainWidget.ui
+					WCtrlBarWidget.ui)
 
 source_group("moc" FILES ${MOC_SRC})
 source_group("ui_src" FILES ${UI_SRC})
