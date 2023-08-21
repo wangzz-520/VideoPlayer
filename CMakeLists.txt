@@ -13,7 +13,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/x64)
 find_package (Qt5Core)
 find_package (Qt5Widgets)
 find_package (Qt5Gui)
-find_package (Qt5Core)
 
 #添加cmake build目录 以保证ui_xx.h再#includ的时候被找到
 include_directories(${CMAKE_BINARY_DIR})
@@ -55,12 +54,19 @@ SET(SOURCES main.cpp MainWidget.h
 					WCtrlBarWidget.h
 					WCtrlBarWidget.cpp
 					WCtrlBarWidget.ui
+					WOpenGLWidget.cpp
+					WOpenGLWidget.h
+					GlobalHelper.cpp
+					GlobalHelper.h
 					)
+
+SET(RESOURES Resource.qrc)
 
 qt5_wrap_cpp(MOC_SRC MainWidget.h
 					DecodeThread.h
 					WCtrlBarWidget.h
-					WCustomSlider.h)
+					WCustomSlider.h
+					WOpenGLWidget.h)
 
 qt5_wrap_ui(UI_SRC MainWidget.ui
 					WCtrlBarWidget.ui)
@@ -70,6 +76,6 @@ source_group("ui_src" FILES ${UI_SRC})
 source_group("src" FILES ${SOURCES})
 
 #设定工程的生成方式 并添加工程源文件
-add_executable(VideoPlayer ${SOURCES} ${UI_SRC} ${MOC_SRC})
+add_executable(VideoPlayer ${SOURCES} ${UI_SRC} ${MOC_SRC} ${RESOURES})
 
 target_link_libraries(VideoPlayer ${QT_LIB} ${FFMPEG_LIB})

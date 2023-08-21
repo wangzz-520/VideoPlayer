@@ -143,11 +143,11 @@ void DecodeThread::decodeStream()
 				ret = avcodec_receive_frame(m_pCodecCtx, m_frame);
 				if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
 				{
-					return;
+					continue;
 				}
 				else if (ret < 0)
 				{
-					return;
+					continue;
 				}
 
 				switch (m_pCodecCtx->pix_fmt)
@@ -179,7 +179,7 @@ void DecodeThread::decodeStream()
 					}
 
 					//发送信号，yuv数据
-					emit sigData(buffer);
+					emit sigData(buffer, width, height);
 				}break;
 				default:
 				{

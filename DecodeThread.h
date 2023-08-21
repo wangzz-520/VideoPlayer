@@ -20,7 +20,7 @@ public:
 	~DecodeThread();
 
 Q_SIGNALS:
-	void sigData(uint8_t* rgbBuffer);
+	void sigData(uint8_t* yuvBuffer,int width,int height);
 
 public:
 	void setUrl(QString url);
