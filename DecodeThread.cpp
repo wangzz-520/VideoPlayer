@@ -180,6 +180,7 @@ void DecodeThread::decodeStream()
 
 					//发送信号，yuv数据
 					emit sigData(buffer, width, height);
+					delete[]buffer;
 				}break;
 				default:
 				{

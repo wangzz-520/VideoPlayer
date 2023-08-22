@@ -60,8 +60,8 @@ void WOpenGLWidget::initializeGL()
     initializeOpenGLFunctions();
 
     m_program = new QOpenGLShaderProgram();
-    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex,"F:/wzzProj/VideoPlayer/shaders/shapes.vert");
-    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment,"F:/wzzProj/VideoPlayer/shaders/shapes.frag");
+    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex,":/shaders/shaders/shapes.vert");
+    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment,":/shaders/shaders/shapes.frag");
     m_program->link();
 
     //==========带纹理的图片使用的VAO VBO================
