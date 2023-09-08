@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QThread>
-#include <QImage>
+#include <QElapsedTimer>
 
 extern "C"
 {

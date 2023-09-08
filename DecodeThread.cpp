@@ -1,4 +1,6 @@
 #include "DecodeThread.h"
+#include <QDebug>
+#include <chrono>
 
 DecodeThread::DecodeThread(QObject *parent)
 	: QThread(parent)
@@ -133,10 +135,12 @@ double DecodeThread::r2d(AVRational r)
 
 void DecodeThread::decodeStream()
 {
+	uint8_t* buffer = NULL;
 	while (av_read_frame(m_pFormatCtx, m_avpacket) >= 0)
 	{
 		if (m_avpacket->stream_index == m_videoIndex)
 		{
+			auto start = std::chrono::steady_clock::now();
 			int ret = avcodec_send_packet(m_pCodecCtx, m_avpacket);
 			if (ret >= 0)
 			{
@@ -154,33 +158,72 @@ void DecodeThread::decodeStream()
 				{
 				case AV_PIX_FMT_YUV420P:
 				{
-					unsigned char* buffer = new unsigned char[(int)(m_width * m_height * 1.5)];
 					int width = m_frame->width;
 					int height = m_frame->height;
 
-					int i, j, k = 0;
-					for (i = 0; i < m_pCodecCtx->height; i++)
+					int ySize = m_frame->width * m_frame->height;
+					int uvSize = ySize / 4;
+					int totalSize = ySize + 2 * uvSize;
+
+					// 创建缓冲区
+					if (!buffer)
 					{
-						memcpy(buffer + m_pCodecCtx->width * i,
-							m_frame->data[0] + m_frame->linesize[0] * i,
-							m_pCodecCtx->width);
+						buffer = new uint8_t[totalSize];
+						memset(buffer, 0, sizeof(buffer));
 					}
-					for (j = 0; j < m_pCodecCtx->height / 2; j++)
-					{
-						memcpy(buffer + m_pCodecCtx->width*i + m_pCodecCtx->width / 2 * j,
-							m_frame->data[1] + m_frame->linesize[1] * j,
-							m_pCodecCtx->width / 2);
-					}
-					for (k = 0; k < m_pCodecCtx->height / 2; k++)
-					{
-						memcpy(buffer + m_pCodecCtx->width*i + m_pCodecCtx->width / 2 * j + m_pCodecCtx->width / 2 * k,
-							m_frame->data[2] + m_frame->linesize[2] * k,
-							m_pCodecCtx->width / 2);
-					}
+
+					// 拷贝YUV420P数据到缓冲区
+					memcpy(buffer, m_frame->data[0], ySize); // 拷贝Y分量
+					memcpy(buffer + ySize, m_frame->data[1], uvSize); // 拷贝U分量
+					memcpy(buffer + ySize + uvSize, m_frame->data[2], uvSize); // 拷贝V分量
 
 					//发送信号，yuv数据
 					emit sigData(buffer, width, height);
-					delete[]buffer;
+					//delete[]buffer;
+				}break;
+				case AV_PIX_FMT_YUV422P:
+				{
+					int width = m_frame->width;
+					int height = m_frame->height;
+
+					// 确定YUV422P数据的大小
+					int ySize = m_frame->width * m_frame->height;
+					int uvSize = ySize / 2;
+					int totalSize = ySize + 2 * uvSize;
+					// 创建缓冲区
+					uint8_t* buffer = new uint8_t[totalSize];
+					memset(buffer, 0, sizeof(buffer));
+
+					// 拷贝YUV422P数据到缓冲区
+					memcpy(buffer, m_frame->data[0], ySize); // 拷贝Y分量
+					memcpy(buffer + ySize, m_frame->data[1], uvSize); // 拷贝U分量
+					memcpy(buffer + ySize + uvSize, m_frame->data[2], uvSize); // 拷贝V分量
+
+					//发送信号，yuv数据
+					emit sigData(buffer, width, height);
+					//delete[]buffer;
+				}break;
+				case AV_PIX_FMT_YUV444P:
+				{
+					int width = m_frame->width;
+					int height = m_frame->height;
+
+					// 确定YUV422P数据的大小
+					int ySize = m_frame->width * m_frame->height;
+					int uvSize = ySize;
+					int totalSize = ySize + 2 * uvSize;
+					// 创建缓冲区
+					uint8_t* buffer = new uint8_t[totalSize];
+					memset(buffer, 0, sizeof(buffer));
+
+					// 拷贝YUV444P数据到缓冲区
+					memcpy(buffer, m_frame->data[0], ySize); // 拷贝Y分量
+					memcpy(buffer + ySize, m_frame->data[1], uvSize); // 拷贝U分量
+					memcpy(buffer + ySize + uvSize, m_frame->data[2], uvSize); // 拷贝V分量
+
+					//发送信号，yuv数据
+					emit sigData(buffer, width, height);
+					//delete[]buffer;
 				}break;
 				default:
 				{
@@ -189,6 +232,13 @@ void DecodeThread::decodeStream()
 				}
 				}
 			}
+			auto end = std::chrono::steady_clock::now();
+
+			auto tt = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+			qDebug() << "spend time = " << tt.count();
+			qDebug() << "sleep time = " << 1000 / m_fps - tt.count() / 1000;
+			msleep(1000 / m_fps - tt.count() / 1000);
 		}
+		av_packet_unref(m_avpacket);
 	}
 }

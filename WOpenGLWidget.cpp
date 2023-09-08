@@ -1,5 +1,5 @@
 #include "WOpenGLWidget.h"
-
+#include <QDebug>
 
 static float vertices[] = {
 //     ---- 位置 ----    - 纹理坐标 -
@@ -14,46 +14,41 @@ static int indices[] = {
     1, 2, 3
 };
 
+
 WOpenGLWidget::WOpenGLWidget(QWidget* parent)
     : QOpenGLWidget(parent)
 	, m_impl(new OpenGLDisplayImpl)
 {
-	
-}
 
-void WOpenGLWidget::initBuffer(int width, int height)
-{
-	if (m_impl && m_impl->bufYuv)
-	{
-		m_impl->bufYuv = new unsigned char[width * height * 1.5];
-		memset(m_impl->bufYuv, 0, width * height * 1.5);
-
-		m_impl->frameSize = width * height * 1.5;
-		m_isInit = true;
-	}	
-}
-
-bool WOpenGLWidget::isInit()
-{
-	return m_isInit;
 }
 
 void WOpenGLWidget::slotReceiveVideoData(uint8_t* yuvBuffer, int width, int height)
 {
-	if (!isInit())
-	{
-		initBuffer(width, height);
-	}
 	m_impl->videoW = width;
 	m_impl->videoH = height;
 
-	if (m_impl->bufYuv)
+	if (!m_impl->buffer[0])
 	{
-		memcpy(m_impl->bufYuv, yuvBuffer, m_impl->frameSize);
-		//update();
-		update();
+		m_impl->buffer[0] = new unsigned char[width * height];//y
 	}
+		
+	if (!m_impl->buffer[1])
+	{
+		m_impl->buffer[1] = new unsigned char[width * height / 4];//u
+	}
+
+	if (!m_impl->buffer[2])
+	{
+		m_impl->buffer[2] = new unsigned char[width * height / 4];//v
+	}
+
+	memcpy(m_impl->buffer[0], yuvBuffer, width * height);
+	memcpy(m_impl->buffer[1], yuvBuffer+ width * height, width * height/4);
+	memcpy(m_impl->buffer[2], yuvBuffer+ 5 * width * height / 4, width * height/4);
+
+	update();
 }
+
 
 void WOpenGLWidget::initializeGL()
 {
@@ -117,8 +112,8 @@ void WOpenGLWidget::paintGL()
     //激活纹理单元0
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_impl->textureY->textureId());
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_impl->videoW, 
-		m_impl->videoH, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, m_impl->bufYuv);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_impl->videoW,
+		m_impl->videoH, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, m_impl->buffer[0]);
     //设置纹理环绕方式
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -129,7 +124,7 @@ void WOpenGLWidget::paintGL()
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_impl->textureU->textureId());
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_impl->videoW / 2, m_impl->videoH / 2
-		, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, (char*)m_impl->bufYuv + m_impl->videoW * m_impl->videoH);
+		, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, m_impl->buffer[1]);
     //设置纹理环绕方式
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -140,7 +135,7 @@ void WOpenGLWidget::paintGL()
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_impl->textureV->textureId());
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_impl->videoW / 2, m_impl->videoH / 2
-		, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, (char*)m_impl->bufYuv + m_impl->videoW * m_impl->videoH * 5 / 4);
+		, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, m_impl->buffer[2]);
 	//设置纹理环绕方式
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -149,8 +144,6 @@ void WOpenGLWidget::paintGL()
 
     glBindVertexArray(m_VAO);//绑定VAO
     glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_INT,0);
-    glBindTexture(GL_TEXTURE_2D,0);
-    glBindVertexArray(0);
 }
 
 void WOpenGLWidget::resizeGL(int w, int h)

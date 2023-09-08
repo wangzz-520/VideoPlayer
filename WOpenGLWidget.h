@@ -19,17 +19,14 @@ class OpenGLDisplayImpl
 public:
 	OpenGLDisplayImpl()
 	{
-		bufYuv = nullptr;
 		textureY = NULL;
 		textureU = NULL;
 		textureV = NULL;
 		videoW = 0;
 		videoH = 0;
-		frameSize = 0;
 	}
 
-	unsigned char*          bufYuv;
-	int                     frameSize;
+	unsigned char *buffer[3] = {0};
 
 	QOpenGLTexture*         textureY;
 	QOpenGLTexture*         textureU;
@@ -43,10 +40,6 @@ class WOpenGLWidget : public QOpenGLWidget,public QOpenGLFunctions_3_3_Core
     Q_OBJECT
 public:
     WOpenGLWidget(QWidget* parent = Q_NULLPTR);
-
-public:
-	void initBuffer(int width,int height);
-	bool isInit();
 
 public slots:
 	void slotReceiveVideoData(uint8_t* yuvBuffer, int width, int height);
@@ -64,8 +57,6 @@ private:
     GLuint m_EBO = 0;
 
 	OpenGLDisplayImpl *m_impl = nullptr;
-
-	bool m_isInit = false;
 };
 
 #endif // WOPENGLWIDGET_H
