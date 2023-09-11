@@ -98,11 +98,8 @@ void WOpenGLWidget::initializeGL()
 
 void WOpenGLWidget::paintGL()
 {
-    glClearColor(1.0f,1.0f,1.0f,1.0f);
+    glClearColor(1.0f,0.0f,0.0f,0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-
-	glEnable(GL_LINE_SMOOTH);
-	glHint(GL_LINE_SMOOTH, GL_NICEST);
 
     m_program->bind();
 	m_impl->textureY->bind(0);

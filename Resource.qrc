@@ -3,6 +3,17 @@
         <file>shaders/shapes.frag</file>
         <file>shaders/shapes.vert</file>
     </qresource>
-    <qresource prefix="/image"/>
-    <qresource prefix="/qss"/>
+    <qresource prefix="/image">
+        <file>image/next.png</file>
+        <file>image/pause.png</file>
+        <file>image/play.png</file>
+        <file>image/pre.png</file>
+        <file>image/stop.png</file>
+        <file>image/voice_off.png</file>
+        <file>image/voice_on.png</file>
+    </qresource>
+    <qresource prefix="/qss">
+        <file>qss/MainWidget.qss</file>
+        <file>qss/WCtrlBarWidget.qss</file>
+    </qresource>
 </RCC>

@@ -95,7 +95,7 @@
     <ClCompile Include="DecodeThread.cpp" />
     <ClCompile Include="GlobalHelper.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MainWidget.cpp" />
+    <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="WCtrlBarWidget.cpp" />
     <ClCompile Include="WCustomSlider.cpp" />
     <ClCompile Include="WOpenGLWidget.cpp" />
@@ -105,13 +105,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GlobalHelper.h" />
+    <QtMoc Include="MainWindow.h" />
     <QtMoc Include="WOpenGLWidget.h" />
     <QtMoc Include="WCustomSlider.h" />
     <QtMoc Include="WCtrlBarWidget.h" />
-    <QtMoc Include="MainWidget.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="MainWidget.ui" />
+    <QtUic Include="MainWindow.ui" />
     <QtUic Include="WCtrlBarWidget.ui" />
   </ItemGroup>
   <ItemGroup>

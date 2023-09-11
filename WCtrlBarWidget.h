@@ -16,8 +16,6 @@ private slots:
 	void slotForward();
 	void slotPlayOrPause();
 	void slotStop();
-	void slotPlaylistCtrl();
-	void slotSetting();
 	void slotVolume();
 
 private:

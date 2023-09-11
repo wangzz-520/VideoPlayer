@@ -32,9 +32,6 @@
     <ClCompile Include="GlobalHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MainWidget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WCtrlBarWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -44,12 +41,12 @@
     <ClCompile Include="WOpenGLWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MainWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DecodeThread.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="MainWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="WCtrlBarWidget.h">
@@ -61,6 +58,9 @@
     <QtMoc Include="WOpenGLWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="MainWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GlobalHelper.h">
@@ -68,10 +68,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="MainWidget.ui">
+    <QtUic Include="WCtrlBarWidget.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtUic Include="WCtrlBarWidget.ui">
+    <QtUic Include="MainWindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
