@@ -11,12 +11,23 @@ public:
 	WCtrlBarWidget(QWidget *parent = nullptr);
 	~WCtrlBarWidget();
 
+signals:
+	void sigPause(bool pause);
+
+public slots:
+	void slotSetTime(int curSec);
+	void slotStartPlay(int totalSec);
+
 private slots:
 	void slotBackward();
 	void slotForward();
 	void slotPlayOrPause();
 	void slotStop();
 	void slotVolume();
+
+private:
+	bool m_isStartPlay = false;
+	int m_totalTime = 0;
 
 private:
 	Ui::WCtrlBarWidgetClass ui;

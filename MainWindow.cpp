@@ -3,6 +3,7 @@
 #include "DecodeThread.h"
 #include <QFileDialog>
 #include <QAction>
+#include "AudioPlayThread.h"
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -20,10 +21,17 @@ MainWindow::MainWindow(QWidget *parent)
 	this->statusBar()->hide();
 
 	connect(ui.actionOpen, &QAction::triggered, this, &MainWindow::slotActionOpen);
+
+	//g_AudioPlayThread->start();
 }
 
 MainWindow::~MainWindow()
-{}
+{
+	if (m_thread) {
+		m_thread->setStoped(true);
+		m_thread->wait();
+	}
+}
 
 void MainWindow::slotActionOpen()
 {
@@ -34,9 +42,17 @@ void MainWindow::slotActionOpen()
 	if (fileName.isEmpty())
 		return;
 
-	DecodeThread *thread = new DecodeThread(this);
-	connect(thread, &DecodeThread::sigData, ui.openGLWidget
+	m_thread = new DecodeThread(this);
+	connect(m_thread, &DecodeThread::sigData, ui.openGLWidget
 		, &WOpenGLWidget::slotReceiveVideoData);
-	thread->setUrl(fileName);
-	thread->start();
+	connect(m_thread, &DecodeThread::sigUpdateTime, ui.ctrlBarWidget, &WCtrlBarWidget::slotSetTime);
+	connect(m_thread, &DecodeThread::sigStart, ui.ctrlBarWidget, &WCtrlBarWidget::slotStartPlay);
+	connect(ui.ctrlBarWidget, &WCtrlBarWidget::sigPause, this, &MainWindow::slotSetPause);
+	m_thread->setUrl(fileName);
+	m_thread->start();
+}
+
+void MainWindow::slotSetPause(bool isPause)
+{
+	m_thread->setPause(isPause);
 }

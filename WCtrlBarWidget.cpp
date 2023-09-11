@@ -1,6 +1,16 @@
 #include "WCtrlBarWidget.h"
 #include "GlobalHelper.h"
 
+static QString playStyle = "QPushButton#btnPlayOrPause\
+{\
+	border-image:url(\":/image/image/play.png\");\
+}";
+
+static QString pauseStyle = "QPushButton#btnPlayOrPause\
+{\
+	border-image:url(\":/image/image/pause.png\");\
+}";
+
 WCtrlBarWidget::WCtrlBarWidget(QWidget *parent)
 	: QWidget(parent)
 {
@@ -31,6 +41,36 @@ WCtrlBarWidget::WCtrlBarWidget(QWidget *parent)
 WCtrlBarWidget::~WCtrlBarWidget()
 {}
 
+void WCtrlBarWidget::slotSetTime(int curSec)
+{
+	int thh, tmm, tss;
+	thh = curSec / 3600;
+	tmm = (curSec % 3600) / 60;
+	tss = (curSec % 60);
+	QTime TotalTime2(thh, tmm, tss);
+
+	ui.playSlider->setValue(curSec * 1.0 / m_totalTime * MAX_SLIDER_VALUE);
+	ui.videoPlayTimeTimeEdit->setTime(TotalTime2);
+}
+
+void WCtrlBarWidget::slotStartPlay(int totalSec)
+{
+	m_totalTime = totalSec;
+	m_isStartPlay = true;
+
+	int thh, tmm, tss;
+	thh = totalSec / 3600;
+	tmm = (totalSec % 3600) / 60;
+	tss = (totalSec % 60);
+	QTime TotalTime(thh, tmm, tss);
+
+	ui.videoTotalTimeTimeEdit->setTime(TotalTime);
+
+	ui.btnPlayOrPause->setStyleSheet(pauseStyle);
+
+	m_isStartPlay = true;
+}
+
 void WCtrlBarWidget::slotBackward()
 {
 
@@ -43,7 +83,20 @@ void WCtrlBarWidget::slotForward()
 
 void WCtrlBarWidget::slotPlayOrPause()
 {
+	m_isStartPlay = !m_isStartPlay;
 
+	if (m_isStartPlay)
+	{
+		ui.btnPlayOrPause->setStyleSheet(pauseStyle);
+		ui.btnPlayOrPause->setToolTip("ÔÝÍ£");
+	}
+	else
+	{
+		ui.btnPlayOrPause->setStyleSheet(playStyle);
+		ui.btnPlayOrPause->setToolTip("²¥·Å");
+	}
+	
+	emit sigPause(!m_isStartPlay);
 }
 
 void WCtrlBarWidget::slotStop()
