@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <chrono>
 #include "AudioPlayThread.h"
+#include "Audioplayer.h"
 
 DecodeThread::DecodeThread(QObject *parent)
 	: QThread(parent)
@@ -162,6 +163,33 @@ void DecodeThread::run()
 			printf("Could not open codec.\n");
 			return;
 		}
+		// 创建重采样上下文
+		m_swrContext = swr_alloc();
+		if (!m_swrContext)
+		{
+			std::cerr << "Failed to allocate resampler context." << std::endl;
+		}
+
+		// 设置重采样参数
+		m_swrContext = swr_alloc_set_opts(NULL,												 //ctx
+			AV_CH_LAYOUT_STEREO,																	//输出channel布局
+			AV_SAMPLE_FMT_S16,																		 //输出的采样格式
+			44100,																									//采样率
+			av_get_default_channel_layout(m_audioCodecCtx->channels),			 //输入channel布局
+			m_audioCodecCtx->sample_fmt,														//输入的采样格式
+			m_audioCodecCtx->sample_rate,														//输入的采样率
+			0, NULL);
+		
+		// 初始化重采样上下文
+		if (swr_init(m_swrContext) < 0) 
+		{
+			std::cerr << "Failed to initialize resampler context." << std::endl;
+			swr_free(&m_swrContext);
+		}
+
+		m_channels = m_audioCodecCtx->channels;
+		m_sampleRate = m_audioCodecCtx->sample_rate;
+
 		//===================audio=================
 	}
 
@@ -193,6 +221,15 @@ double DecodeThread::r2d(AVRational r)
 void DecodeThread::decodeStream()
 {
 	uint8_t* buffer = NULL;
+    // 分配输出音频数据
+	uint8_t **out_data = NULL;
+
+	FILE* f;
+	f = fopen("pre.pcm", "wb");
+
+	FILE* f2;
+	f2 = fopen("test.pcm", "wb");
+
 	while (m_isStartDecode)
 	{
 		if (m_isPause)
@@ -256,8 +293,11 @@ void DecodeThread::decodeStream()
 						int uvSize = ySize / 2;
 						int totalSize = ySize + 2 * uvSize;
 						// 创建缓冲区
-						uint8_t* buffer = new uint8_t[totalSize];
-						memset(buffer, 0, sizeof(buffer));
+						if (!buffer)
+						{
+							buffer = new uint8_t[totalSize];
+							memset(buffer, 0, sizeof(buffer));
+						}
 
 						// 拷贝YUV422P数据到缓冲区
 						memcpy(buffer, m_frame->data[0], ySize); // 拷贝Y分量
@@ -278,8 +318,11 @@ void DecodeThread::decodeStream()
 						int uvSize = ySize;
 						int totalSize = ySize + 2 * uvSize;
 						// 创建缓冲区
-						uint8_t* buffer = new uint8_t[totalSize];
-						memset(buffer, 0, sizeof(buffer));
+						if (!buffer)
+						{
+							buffer = new uint8_t[totalSize];
+							memset(buffer, 0, sizeof(buffer));
+						}
 
 						// 拷贝YUV444P数据到缓冲区
 						memcpy(buffer, m_frame->data[0], ySize); // 拷贝Y分量
@@ -324,40 +367,62 @@ void DecodeThread::decodeStream()
 					}
 				}
 
+				static int index = 0;
+
 				int data_size = av_get_bytes_per_sample(m_audioCodecCtx->sample_fmt);
-				if (data_size < 0)
-				{
-					continue;
-				}
-				//for (int i = 0; i < m_frame->nb_samples; i++)
-				//{
-				//	for (int ch = 0; ch < m_audioCodecCtx->channels; ch++)
-				//	{
-				//		//fwrite(m_frame->data[ch] + data_size * i, 1, data_size, f);
-				//	}
-				//}
-				int frame_size = 0;
-				int channels = 0;
-				int sample_rate = 0;
-
-				channels = m_audioCodecCtx->channels;
-				sample_rate = m_audioCodecCtx->sample_rate;
-				frame_size = data_size;
-
-				// 计算缓冲区大小
-				int buffer_size = av_samples_get_buffer_size(NULL, channels, frame_size, m_audioCodecCtx->sample_fmt, 0);
-				if (buffer_size < 0) 
-				{
+				if (data_size < 0) {
 					continue;
 				}
 
-				//uint8_t *audioBuffer = (uint8_t *)malloc(buffer_size);
+				if (index > 100 && index < 500)
+				{
+					for (int i = 0; i < m_frame->nb_samples; i++)
+					{
+						for (int ch = 0; ch < m_audioCodecCtx->channels; ch++)
+						{
+							fwrite(m_frame->data[ch] + data_size * i, 1, data_size, f);
+						}
+					}
+				}
 
-				// 将解码后的音频数据拷贝到缓冲区
-				//av_samples_copy(&audioBuffer, m_frame->data, 0, 0, frame_size, channels, m_audioCodecCtx->sample_fmt);
+				//输入的样本数
+				int in_nb_samples = m_frame->nb_samples;//1024
 
-				//g_AudioPlayThread->setCurrentSampleInfo(sample_rate, frame_size, channels);
-				//g_AudioPlayThread->addAudioBuffer((char*)audioBuffer, buffer_size);
+				//输出的样本数
+				int out_linesize;
+				int dst_nb_samples = av_rescale_rnd(in_nb_samples, 44100, m_sampleRate, AV_ROUND_UP);
+
+				av_samples_alloc_array_and_samples(&out_data, &out_linesize, 2, dst_nb_samples, AV_SAMPLE_FMT_S16, 0);
+
+				//返回每个通道输出的样本数，错误时为负值
+				int sampleCount = swr_convert(m_swrContext, out_data, dst_nb_samples,
+					(const uint8_t**)m_frame->data, in_nb_samples);
+
+				if (sampleCount < 0)
+				{
+					std::cerr << "Error while resampling." << std::endl;
+				}
+
+				int outSize = sampleCount * 2 * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+
+				std::vector<uint8_t> pcmData;
+				pcmData.resize(outSize);
+				memcpy(pcmData.data(), out_data[0], pcmData.size());
+
+				if (index > 100 && index < 500)
+				{
+					fwrite(pcmData.data(), 1, pcmData.size(), f2);
+				}
+
+				if (index == 500)
+				{
+					fclose(f);
+					fclose(f2);
+				}
+				g_AudioPlayThread->setCurrentSampleInfo(44100, m_channels);
+
+				index++;
+				//g_AudioPlayThread->play(pcmData);
 			}
 			av_packet_unref(m_avpacket);
 		}

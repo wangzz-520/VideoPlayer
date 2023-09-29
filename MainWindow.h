@@ -2,9 +2,13 @@
 
 #include <QMainWindow>
 #include "ui_MainWindow.h"
+#include "global.h"
 
 class DecodeThread;
 class AudioPlayThread;
+class Audioplayer;
+class WDemuxThread;
+
 
 class MainWindow : public QMainWindow
 {
@@ -22,5 +26,9 @@ private:
 	Ui::MainWindowClass ui;
 
 private:
-	DecodeThread *m_thread;
+	DecodeThread *m_thread = nullptr;
+
+	WDemuxThread *m_demuxThread = nullptr;
+
+
 };

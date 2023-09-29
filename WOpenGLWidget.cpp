@@ -22,8 +22,50 @@ WOpenGLWidget::WOpenGLWidget(QWidget* parent)
 
 }
 
+WOpenGLWidget::~WOpenGLWidget()
+{
+	if (m_impl)
+	{
+		if (m_impl->buffer[0]) {
+			delete m_impl->buffer[0];
+			m_impl->buffer[0] = nullptr;
+		}
+
+		if (m_impl->buffer[1]) {
+			delete m_impl->buffer[1];
+			m_impl->buffer[1] = nullptr;
+		}
+
+		if (m_impl->buffer[2]) {
+			delete m_impl->buffer[2];
+			m_impl->buffer[2] = nullptr;
+		}
+
+		if (m_impl->textureY)
+		{
+			m_impl->textureY->destroy();
+		}
+
+		if (m_impl->textureU)
+		{
+			m_impl->textureU->destroy();
+		}
+
+		if (m_impl->textureV)
+		{
+			m_impl->textureV->destroy();
+		}
+
+		delete m_impl;
+		m_impl = nullptr;
+	}
+}
+
 void WOpenGLWidget::slotReceiveVideoData(uint8_t* yuvBuffer, int width, int height)
 {
+	if (!m_impl)
+		return;
+
 	m_impl->videoW = width;
 	m_impl->videoH = height;
 

@@ -13,7 +13,6 @@
 #include <QSet>
 #include <QPainter>
 
-
 class OpenGLDisplayImpl
 {
 public:
@@ -40,8 +39,9 @@ class WOpenGLWidget : public QOpenGLWidget,public QOpenGLFunctions_3_3_Core
     Q_OBJECT
 public:
     WOpenGLWidget(QWidget* parent = Q_NULLPTR);
+	~WOpenGLWidget();
 
-public slots:
+public:
 	void slotReceiveVideoData(uint8_t* yuvBuffer, int width, int height);
 
 protected:

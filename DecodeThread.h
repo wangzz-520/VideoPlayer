@@ -7,8 +7,10 @@ extern "C"
 {
 #include "libavformat/avformat.h"
 #include "libavutil/dict.h"
+#include "libavutil/opt.h"
 #include "libswscale/swscale.h"
 #include "libavutil/imgutils.h"  
+#include "libswresample/swresample.h"
 };
 
 class DecodeThread : public QThread
@@ -43,6 +45,7 @@ private:
 	AVFormatContext* m_pFormatCtx = NULL;
 	AVCodecContext* m_pCodecCtx = NULL;
 	AVCodecContext *m_audioCodecCtx = NULL;
+	SwrContext* m_swrContext = NULL;
 	AVPacket* m_avpacket = NULL;
 	AVFrame *m_frame = NULL;
 	// ”∆µindex
@@ -57,4 +60,8 @@ private:
 	int m_height = 0;
 	// ”∆µ÷°¬ ;
 	int m_fps = 0;
+	//channels
+	int m_channels = 0;
+	//sample_rate
+	int m_sampleRate = 0;
 };

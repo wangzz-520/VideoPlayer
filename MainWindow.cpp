@@ -3,14 +3,13 @@
 #include "DecodeThread.h"
 #include <QFileDialog>
 #include <QAction>
-#include "AudioPlayThread.h"
+#include "Audioplayer.h"
+#include "WDemuxThread.h"
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-
-	//setWindowFlags(Qt::FramelessWindowHint /*| Qt::WindowSystemMenuHint*/ | Qt::WindowMinimizeButtonHint);
 
 	//¼ÓÔØÑùÊ½
 	QString qss = GlobalHelper::GetQssStr(":/qss/qss/MainWidget.qss");
@@ -21,16 +20,23 @@ MainWindow::MainWindow(QWidget *parent)
 	this->statusBar()->hide();
 
 	connect(ui.actionOpen, &QAction::triggered, this, &MainWindow::slotActionOpen);
+	connect(ui.ctrlBarWidget, &WCtrlBarWidget::sigPause, this, &MainWindow::slotSetPause);
 
-	//g_AudioPlayThread->start();
+	if (!m_demuxThread)
+	{
+		m_demuxThread = new WDemuxThread(this);
+		m_demuxThread->start();
+	}
 }
 
 MainWindow::~MainWindow()
 {
-	if (m_thread) {
-		m_thread->setStoped(true);
-		m_thread->wait();
+	if (m_demuxThread)
+	{
+		m_demuxThread->close();
+		delete m_demuxThread;
 	}
+	
 }
 
 void MainWindow::slotActionOpen()
@@ -42,17 +48,22 @@ void MainWindow::slotActionOpen()
 	if (fileName.isEmpty())
 		return;
 
-	m_thread = new DecodeThread(this);
-	connect(m_thread, &DecodeThread::sigData, ui.openGLWidget
-		, &WOpenGLWidget::slotReceiveVideoData);
-	connect(m_thread, &DecodeThread::sigUpdateTime, ui.ctrlBarWidget, &WCtrlBarWidget::slotSetTime);
-	connect(m_thread, &DecodeThread::sigStart, ui.ctrlBarWidget, &WCtrlBarWidget::slotStartPlay);
-	connect(ui.ctrlBarWidget, &WCtrlBarWidget::sigPause, this, &MainWindow::slotSetPause);
-	m_thread->setUrl(fileName);
-	m_thread->start();
+	//m_thread = new DecodeThread(this);
+	//connect(m_thread, &DecodeThread::sigData, ui.openGLWidget
+	//	, &WOpenGLWidget::slotReceiveVideoData);
+	//connect(m_thread, &DecodeThread::sigUpdateTime, ui.ctrlBarWidget, &WCtrlBarWidget::slotSetTime);
+	//connect(m_thread, &DecodeThread::sigStart, ui.ctrlBarWidget, &WCtrlBarWidget::slotStartPlay);
+
+	//m_thread->setUrl(fileName);
+	//m_thread->start();
+
+	VideoFunc videoFunc = std::bind(&WOpenGLWidget::slotReceiveVideoData, ui.openGLWidget,
+		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+
+	m_demuxThread->open(fileName.toStdString().c_str(), videoFunc);
+	
 }
 
 void MainWindow::slotSetPause(bool isPause)
 {
-	m_thread->setPause(isPause);
 }

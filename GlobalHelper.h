@@ -11,7 +11,6 @@ enum ERROR_CODE
 };
 
 
-
 #include <QString>
 #include <QPushButton>
 #include <QDebug>
@@ -78,7 +77,7 @@ extern "C"{
 }
 
 
-
+using namespace std;
 
 #define MAX_SLIDER_VALUE 65536
 
