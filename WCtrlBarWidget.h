@@ -14,7 +14,7 @@ public:
 signals:
 	void sigPause(bool pause);
 
-public slots:
+public:
 	void slotSetTime(int curSec);
 	void slotStartPlay(int totalSec);
 

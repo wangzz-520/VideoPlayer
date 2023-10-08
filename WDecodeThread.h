@@ -20,8 +20,7 @@ public:
 
 	virtual void close();
 
-protected:
-	void run();
+	virtual void setParams(int index,double timeBase);
 
 protected:
 	WDecode *m_decode = nullptr;
@@ -30,6 +29,9 @@ protected:
 	QMutex m_mutex;
 
 	int m_maxList = 100;
+
+	int m_index = -1;
+	double m_timeBase = 0;
 };
 
 #endif // 

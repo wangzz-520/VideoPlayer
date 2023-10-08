@@ -13,7 +13,9 @@ public:
 	virtual ~WVideoThread();
 
 public:
-	virtual bool open(AVCodecParameters *para, VideoFunc func);
+	virtual bool open(AVCodecParameters *para, VideoFunc func, TimeFunc timeFunc);
+
+	virtual void setSynPts(long long pts);
 
 protected:
 	void run();
@@ -23,6 +25,10 @@ private:
 	bool m_isPause = false;
 
 	VideoFunc m_func;
+
+	TimeFunc m_timeFunc;
+
+	long long m_synpts = 0;
 };
 
 #endif // !_WVIDEOTHREAD_H_

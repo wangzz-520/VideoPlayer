@@ -1,4 +1,5 @@
 #include "WDemux.h"
+#include <QDebug>
 
 WDemux::WDemux()
 {
@@ -12,7 +13,7 @@ WDemux::~WDemux()
 
 }
 
-bool WDemux::open(const char *url)
+bool WDemux::open(const char *url, TotalTimeFunc totalTimeFunc)
 {
 	//参数设置
 	AVDictionary *opts = NULL;
@@ -67,12 +68,16 @@ bool WDemux::open(const char *url)
 	//视频总时长s
 	m_totalTime = static_cast<double>(m_pFormatCtx->duration) / AV_TIME_BASE;
 
+	totalTimeFunc(m_totalTime);
+
 	//获取帧率;
 	m_fps = r2d(m_pFormatCtx->streams[m_videoIndex]->avg_frame_rate);
 	if (m_fps == 0)
 	{
 		m_fps = 25;
 	}
+
+	m_vTimeBase = r2d(m_pFormatCtx->streams[m_videoIndex]->time_base);
 
 	cout << "=======================================================" << endl;
 	cout << m_videoIndex << " video info" << endl;
@@ -91,6 +96,7 @@ bool WDemux::open(const char *url)
 	{
 		m_sampleRate = m_pFormatCtx->streams[m_audioIndex]->codec->sample_rate;
 		m_channels = m_pFormatCtx->streams[m_audioIndex]->codec->channels;
+		m_aTimeBase = r2d(m_pFormatCtx->streams[m_audioIndex]->time_base);
 
 		cout << "=======================================================" << endl;
 		cout << m_audioIndex << " audio info" << endl;
@@ -126,8 +132,8 @@ AVPacket * WDemux::read()
 		return 0;
 	}
 	//pts转换为毫秒
-	//pkt->pts = pkt->pts*(1000 * (r2d(ic->streams[pkt->stream_index]->time_base)));
-	//pkt->dts = pkt->dts*(1000 * (r2d(ic->streams[pkt->stream_index]->time_base)));
+	//pkt->pts = pkt->pts*(1000 * (r2d(m_pFormatCtx->streams[pkt->stream_index]->time_base)));
+	//pkt->dts = pkt->dts*(1000 * (r2d(m_pFormatCtx->streams[pkt->stream_index]->time_base)));
 	m_mux.unlock();
 	return pkt;
 }
@@ -139,7 +145,7 @@ bool WDemux::isAudio(AVPacket *packet)
 
 	if (packet->stream_index == m_videoIndex)
 		return false;
-
+		
 	return true;
 }
 
@@ -177,3 +183,4 @@ double WDemux::r2d(AVRational r)
 {
 	return r.den == 0 ? 0 : (double)r.num / (double)r.den;
 }
+

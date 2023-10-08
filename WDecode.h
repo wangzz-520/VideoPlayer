@@ -22,6 +22,9 @@ public:
 public:
 	AVCodecContext *m_pCodecCtx = 0;
 
+	//当前解码到的pts
+	long long m_pts = 0;
+
 	std::mutex m_mux;
 };
 

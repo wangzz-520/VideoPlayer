@@ -1,9 +1,7 @@
 #include "MainWindow.h"
 #include "GlobalHelper.h"
-#include "DecodeThread.h"
 #include <QFileDialog>
 #include <QAction>
-#include "Audioplayer.h"
 #include "WDemuxThread.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -60,7 +58,13 @@ void MainWindow::slotActionOpen()
 	VideoFunc videoFunc = std::bind(&WOpenGLWidget::slotReceiveVideoData, ui.openGLWidget,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
-	m_demuxThread->open(fileName.toStdString().c_str(), videoFunc);
+	TotalTimeFunc totalTimeFunc = std::bind(&WCtrlBarWidget::slotStartPlay, ui.ctrlBarWidget,
+		std::placeholders::_1);
+
+	TimeFunc timeFunc = std::bind(&WCtrlBarWidget::slotSetTime, ui.ctrlBarWidget,
+		std::placeholders::_1);
+
+	m_demuxThread->open(fileName.toStdString().c_str(), videoFunc, totalTimeFunc, timeFunc);
 	
 }
 

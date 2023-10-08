@@ -14,12 +14,14 @@ extern "C" {
 #include "libavutil/samplefmt.h"
 #include "libavutil/time.h"
 #include "libavutil/bprint.h"
+#include "libavutil/opt.h"
 #include "libavformat/avformat.h"
 #include "libavcodec/avcodec.h"
 #include "libavfilter/avfilter.h"
 #include "libavdevice/avdevice.h"
 #include "libswscale/swscale.h"
 #include "libavutil/opt.h"
+#include "libavutil/imgutils.h"  
 #include "libavcodec/avfft.h"
 #include "libswresample/swresample.h"
 }
@@ -33,5 +35,9 @@ using namespace std;
 #pragma execution_character_set("utf-8")
 
 typedef std::function<void(uint8_t*, int, int)> VideoFunc;
+
+typedef std::function<void(int64_t)> TotalTimeFunc;
+
+typedef std::function<void(int)> TimeFunc;
 
 #endif // _GLOBAL_H_

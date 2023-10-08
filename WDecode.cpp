@@ -103,11 +103,18 @@ AVFrame* WDecode::recv()
 	AVFrame *frame = av_frame_alloc();
 	int ret = avcodec_receive_frame(m_pCodecCtx, frame);
 	m_mux.unlock();
-	if (ret != 0)
+
+	if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+	{
+		av_frame_free(&frame);
+		return NULL;
+	}
+	else if (ret < 0)
 	{
 		av_frame_free(&frame);
 		return NULL;
 	}
 
+	m_pts = frame->pts;
 	return frame;
 }

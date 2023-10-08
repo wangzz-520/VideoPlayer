@@ -16,7 +16,7 @@ public:
 	virtual ~WDemuxThread();
 
 public:
-	bool open(const char *url, VideoFunc func);
+	bool open(const char *url, VideoFunc func, TotalTimeFunc totalTimeFunc, TimeFunc timeFunc);
 
 	void close();
 

@@ -4,9 +4,7 @@
 #include "ui_MainWindow.h"
 #include "global.h"
 
-class DecodeThread;
-class AudioPlayThread;
-class Audioplayer;
+
 class WDemuxThread;
 
 
@@ -26,7 +24,7 @@ private:
 	Ui::MainWindowClass ui;
 
 private:
-	DecodeThread *m_thread = nullptr;
+	//DecodeThread *m_thread = nullptr;
 
 	WDemuxThread *m_demuxThread = nullptr;
 

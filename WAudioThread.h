@@ -27,11 +27,20 @@ private:
 	void releaseOpenAL();
 	void setALParams();
 
+public:
+	long long m_synpts = 0;
+
 private:
 	QMutex m_audioMutex;
 	bool m_isPause = false;
 
+	int m_unPlayCount = 0;
+
 	SwrContext* m_swrContext = NULL;
+
+	double m_oneframeduration = 0;	//计算一帧数据持续时间 ms
+
+	long long m_IsplayBufferSize = 0;	//已经播放的队列数量
 };
 
 #endif // !_WVIDEOTHREAD_H_

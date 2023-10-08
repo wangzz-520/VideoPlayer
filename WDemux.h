@@ -19,7 +19,7 @@ public:
 
 public:
 	//open url
-	virtual bool open(const char *url);
+	virtual bool open(const char *url, TotalTimeFunc totalTimeFunc);
 	//read packet
 	virtual AVPacket *read();
 	//check isAudio
@@ -48,6 +48,10 @@ public:
 	int m_sampleRate = 0;
 	//“Ù∆µÕ®µ¿ ˝
 	int m_channels = 0;
+	//time_base
+	double m_vTimeBase = 0.0;
+	//audio time_base
+	double m_aTimeBase = 0.0;
 
 protected:
 	double r2d(AVRational r);

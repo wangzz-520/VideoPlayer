@@ -1,5 +1,8 @@
 #include "WVideoThread.h"
 #include "WDecode.h"
+#include <QDebug>
+#include <QElapsedTimer>
+
 
 WVideoThread::WVideoThread(QObject *parent /*= Q_NULLPTR*/)
 	: WDecodeThread(parent)
@@ -14,7 +17,7 @@ WVideoThread::~WVideoThread()
 	wait();
 }
 
-bool WVideoThread::open(AVCodecParameters *para, VideoFunc func)
+bool WVideoThread::open(AVCodecParameters *para, VideoFunc func, TimeFunc timeFunc)
 {
 	if (!para)
 		return false;
@@ -27,8 +30,14 @@ bool WVideoThread::open(AVCodecParameters *para, VideoFunc func)
 	}
 
 	m_func = func;
+	m_timeFunc = timeFunc;
 
 	return ret;
+}
+
+void WVideoThread::setSynPts(long long pts)
+{
+	m_synpts = pts;
 }
 
 void WVideoThread::run()
@@ -45,13 +54,15 @@ void WVideoThread::run()
 		}
 
 		//音视频同步
-		//if (synpts > 0 && synpts < decode->pts)
-		//{
-		//	vmux.unlock();
-		//	msleep(1);
-		//	continue;
-		//}
+		if (m_synpts > 0 && m_synpts < m_decode->m_pts)
+		{
+			m_videoMutex.unlock();
+			msleep(1);
+			continue;
+		}
+		
 		AVPacket *pkt = pop();
+		
 		bool ret = m_decode->send(pkt);
 		if (!ret)
 		{
@@ -89,8 +100,12 @@ void WVideoThread::run()
 				memcpy(buffer + ySize, frame->data[1], uvSize); // 拷贝U分量
 				memcpy(buffer + ySize + uvSize, frame->data[2], uvSize); // 拷贝V分量
 
+				int second = frame->pts * m_timeBase;
+
+				m_timeFunc(second);
 				//发送信号，yuv数据
 				m_func(buffer, width, height);
+
 			}break;
 			case AV_PIX_FMT_YUV422P:
 			{

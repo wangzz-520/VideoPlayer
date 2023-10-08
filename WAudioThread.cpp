@@ -12,6 +12,7 @@ static ALenum g_error;
 static ALboolean g_enumeration;
 static ALfloat g_listenerOri[6] = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f };
 
+
 #define TEST_ERROR(_msg)		\
 	g_error = alGetError();		\
 	if (g_error != AL_NO_ERROR) {	\
@@ -85,6 +86,8 @@ bool WAudioThread::open(AVCodecParameters *para)
 		swr_free(&m_swrContext);
 	}
 
+	m_synpts = 0;
+
 	return ret;
 }
 
@@ -117,13 +120,6 @@ void WAudioThread::run()
 			msleep(5);
 			continue;
 		}
-		//音视频同步
-		//if (synpts > 0 && synpts < decode->pts)
-		//{
-		//	vmux.unlock();
-		//	msleep(1);
-		//	continue;
-		//}
 
 		AVPacket *pkt = pop();
 		bool ret = m_decode->send(pkt);
@@ -139,12 +135,6 @@ void WAudioThread::run()
 			AVFrame * frame = m_decode->recv();
 			if (!frame)
 				break;
-
-			int data_size = av_get_bytes_per_sample(m_decode->m_pCodecCtx->sample_fmt);
-			if (data_size < 0) 
-			{
-				break;
-			}
 
 			//输入的样本数
 			int in_nb_samples = frame->nb_samples;//1024
@@ -171,33 +161,74 @@ void WAudioThread::run()
 			pcmData.resize(outSize);
 			memcpy(pcmData.data(), out_data[0], pcmData.size());
 
-			ALuint bufferID;
+			m_oneframeduration = outSize * 1.0 / (16 / 8) / 2 / 44100 * 1000;
+
+			m_synpts = m_oneframeduration * m_IsplayBufferSize;
+
+			int data_size = av_get_bytes_per_sample(m_decode->m_pCodecCtx->sample_fmt);
+			if (data_size < 0)
+			{
+				break;
+			}
+
+			ALuint bufferID = 0;
 			alGenBuffers(1, &bufferID);
+
+			char errorBuff[100] = {0};
+			sprintf(errorBuff, "%d", bufferID);
+
+			TEST_ERROR("alGenBuffers bufferID = "+ std::string(errorBuff));
+
 			alBufferData(bufferID, AL_FORMAT_STEREO16, pcmData.data(), pcmData.size(), 44100);
+			TEST_ERROR("alBufferData....");
 
 			// 将缓冲区添加到OpenAL源中
 			alSourceQueueBuffers(g_source, 1, &bufferID);
+			TEST_ERROR("alSourceQueueBuffers....");
 
-			ALint source_state;
-			alGetSourcei(g_source, AL_SOURCE_STATE, &source_state);
-			// 播放音频
-			if (source_state != AL_PLAYING) {
-				alSourcePlay(g_source);
-			}
 			// 检查已经播放的缓冲区
 			ALint processed;
 			alGetSourcei(g_source, AL_BUFFERS_PROCESSED, &processed);
+			TEST_ERROR("get process buffer size....");
+
+			//检查总的缓冲区数量
+			ALint totalNum;
+			alGetSourcei(g_source, AL_BUFFERS_QUEUED, &totalNum);
+			TEST_ERROR("get queue buffer size....");
+			
+			ALint source_state;
+			alGetSourcei(g_source, AL_SOURCE_STATE, &source_state);
+
+			if (source_state == AL_STOPPED ||source_state == AL_PAUSED ||source_state == AL_INITIAL)
+			{
+				//如果没有数据,或数据播放完了  
+				if (totalNum < processed || totalNum == 0 || (totalNum == 1 && processed == 1))
+				{
+					//停止播放  
+					printf("...Audio Stop ");
+					break;
+				}
+
+				if (source_state != AL_PLAYING)
+				{
+					alSourcePlay(g_source);
+					TEST_ERROR("play voice....");
+				}
+			}
+
 			while (processed > 0) {
 				ALuint buffer;
 				alSourceUnqueueBuffers(g_source, 1, &buffer);
-				processed--;
-				if(buffer)
-					alDeleteBuffers(1, &buffer);
-			}
+				sprintf(errorBuff, "%d", buffer);
+				TEST_ERROR("alSourceUnqueueBuffers...." + std::string(errorBuff));
 
-			if(bufferID)
-				alDeleteBuffers(1, &bufferID);
-			av_freep(&out_data[0]);
+				alDeleteBuffers(1, &buffer);
+
+				m_oneframeduration++;
+				processed--;
+			}
+	
+			bufferID = 0;
 			av_frame_free(&frame);
 		}
 		m_audioMutex.unlock();

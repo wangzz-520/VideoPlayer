@@ -30,7 +30,7 @@ WDemuxThread::~WDemuxThread()
 
 }
 
-bool WDemuxThread::open(const char *url, VideoFunc func)
+bool WDemuxThread::open(const char *url, VideoFunc func, TotalTimeFunc totalTimeFunc, TimeFunc timeFunc)
 {
 	if (!m_demux)
 		return false;
@@ -38,7 +38,7 @@ bool WDemuxThread::open(const char *url, VideoFunc func)
 	m_mutex.lock();
 
 	//打开解封装
-	bool ret = m_demux->open(url);
+	bool ret = m_demux->open(url, totalTimeFunc);
 	if (!ret)
 	{
 		m_mutex.unlock();
@@ -47,7 +47,7 @@ bool WDemuxThread::open(const char *url, VideoFunc func)
 	}
 
 	//打开视频解码器和处理线程
-	if (!m_videoThread->open(m_demux->videoPara(), func))
+	if (!m_videoThread->open(m_demux->videoPara(), func,timeFunc))
 	{
 		ret = false;
 		cout << "m_videoThread->Open failed!" << endl;
@@ -58,6 +58,9 @@ bool WDemuxThread::open(const char *url, VideoFunc func)
 		ret = false;
 		cout << "m_audioThread->Open failed!" << endl;
 	}
+
+	m_videoThread->setParams(m_demux->m_videoIndex, m_demux->m_vTimeBase);
+	m_audioThread->setParams(m_demux->m_audioIndex, m_demux->m_aTimeBase);
 
 	m_mutex.unlock();
 	return true;
@@ -83,22 +86,38 @@ void WDemuxThread::run()
 {
 	while (!m_isExit)
 	{
+		m_mutex.lock();
 		if (m_isPause)
 		{
+			m_mutex.unlock();
 			msleep(5);
 			continue;
+		}
+
+		if (!m_demux)
+		{
+			m_mutex.unlock();
+			msleep(5);
+			continue;
+		}
+
+		//视频同步音频
+		if (m_audioThread && m_videoThread)
+		{
+			m_videoThread->setSynPts(m_audioThread->m_synpts);
 		}
 
 		AVPacket *pkt = m_demux->read();
 		if (!pkt)
 		{
+			m_mutex.unlock();
 			msleep(5);
 			continue;
 		}
 		//判断数据是音频
 		if (m_demux->isAudio(pkt))
 		{
-			if (m_audioThread)
+			if (m_audioThread) 
 				m_audioThread->push(pkt);
 		}
 		else //视频
@@ -107,6 +126,7 @@ void WDemuxThread::run()
 				m_videoThread->push(pkt);
 		}
 
+		m_mutex.unlock();
 		msleep(1);
 	}
 }

@@ -1,12 +1,19 @@
 #include "DecodeThread.h"
 #include <QDebug>
 #include <chrono>
-#include "AudioPlayThread.h"
 #include "Audioplayer.h"
+#include <QTimer>
 
+static int watiInext2 = 0;
 DecodeThread::DecodeThread(QObject *parent)
 	: QThread(parent)
 {
+	QTimer *timer = new QTimer(this);
+	timer->start(1000);
+	connect(timer, &QTimer::timeout, [=] {
+		qDebug() << "watiInext2 = " << watiInext2;
+		watiInext2 = 0;
+	});
 }
 
 DecodeThread::~DecodeThread()
@@ -349,6 +356,7 @@ void DecodeThread::decodeStream()
 				auto tt = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 				//qDebug() << "spend time = " << tt.count();
 				//qDebug() << "sleep time = " << 1000 / m_fps - tt.count() / 1000;
+				watiInext2++;
 				msleep(1000 / m_fps - tt.count() / 1000);
 			}
 			else if (m_avpacket->stream_index == m_audioIndex)
