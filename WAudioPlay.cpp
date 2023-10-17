@@ -2,7 +2,6 @@
 #include <QAudioFormat>
 #include <QAudioOutput>
 #include <mutex>
-#include "WAudioDevice.h"
 
 class CWAudioPlay :public WAudioPlay
 {

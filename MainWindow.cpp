@@ -35,7 +35,6 @@ MainWindow::~MainWindow()
 		m_demuxThread->close();
 		delete m_demuxThread;
 	}
-	
 }
 
 void MainWindow::slotActionOpen()
@@ -57,7 +56,7 @@ void MainWindow::slotActionOpen()
 		std::placeholders::_1);
 
 	m_demuxThread->open(fileName.toStdString().c_str(), videoFunc, totalTimeFunc, timeFunc);
-	
+
 }
 
 void MainWindow::slotSetPause(bool isPause)

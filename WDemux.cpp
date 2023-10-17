@@ -15,6 +15,8 @@ WDemux::~WDemux()
 
 bool WDemux::open(const char *url, TotalTimeFunc totalTimeFunc)
 {
+	close();
+
 	//参数设置
 	AVDictionary *opts = NULL;
 	//设置rtsp流已tcp协议打开
