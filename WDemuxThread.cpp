@@ -72,8 +72,10 @@ void WDemuxThread::close()
 	wait();
 	if (m_audioThread)
 		m_audioThread->close();
+
 	if (m_videoThread)
 		m_videoThread->close();
+
 	m_mutex.lock();
 	delete m_audioThread;
 	delete m_videoThread;

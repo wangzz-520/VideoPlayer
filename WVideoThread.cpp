@@ -22,15 +22,25 @@ bool WVideoThread::open(AVCodecParameters *para, VideoFunc func, TimeFunc timeFu
 	if (!para)
 		return false;
 
+	//清理缓冲队列
+	clear();
+
+	m_videoMutex.lock();
+	m_synpts = 0;
 	int ret = true;
 	if (!m_decode->open(para))
 	{
+		m_videoMutex.unlock();
 		cout << "video decode open failed!" << endl;
 		ret = false;
+
+		return ret;
 	}
 
 	m_func = func;
 	m_timeFunc = timeFunc;
+
+	m_videoMutex.unlock();
 
 	return ret;
 }

@@ -70,3 +70,19 @@ void MainWindow::slotSeek(double pos)
 	if (m_demuxThread)
 		m_demuxThread->seek(pos);
 }
+
+void MainWindow::mouseDoubleClickEvent(QMouseEvent *e)
+{
+	if (isFullScreen())
+	{
+		ui.ctrlBarWidget->show();
+		this->menuBar()->show();
+		this->showNormal();
+	}
+	else
+	{
+		ui.ctrlBarWidget->hide();
+		this->menuBar()->hide();
+		this->showFullScreen();
+	}	
+}

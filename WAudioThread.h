@@ -2,8 +2,6 @@
 #define _WAUDIOTHREAD_H_
 
 #include <QMutex>
-#include <AL/al.h>
-#include <AL/alc.h>
 #include "WDecodeThread.h"
 #include "global.h"
 

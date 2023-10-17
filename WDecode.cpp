@@ -15,6 +15,9 @@ bool WDecode::open(AVCodecParameters *para)
 	if (!para) 
 		return false;
 
+	//先关闭之前的解码器
+	close();
+	m_pts = 0;
 	///找到解码器
 	AVCodec *vcodec = avcodec_find_decoder(para->codec_id);
 	if (!vcodec)

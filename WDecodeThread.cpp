@@ -18,26 +18,18 @@ void WDecodeThread::push(AVPacket *pkt)
 	if (!pkt)
 		return;
 
-	//while (!m_isExit)
-	//{
-	//	m_mutex.lock();
-	//	if (m_queue.size() < m_maxList)
-	//	{
-	//		m_queue.enqueue(pkt);
-	//		m_mutex.unlock();
-	//		break;
-	//	}
-	//	m_mutex.unlock();
-	//	msleep(1);
-	//}
-	m_mutex.lock();
-	if (m_queue.size() < m_maxList)
+	while (!m_isExit)
 	{
-		m_queue.enqueue(pkt);
+		m_mutex.lock();
+		if (m_queue.size() < m_maxList)
+		{
+			m_queue.enqueue(pkt);
+			m_mutex.unlock();
+			break;
+		}
 		m_mutex.unlock();
-		return;
+		msleep(1);
 	}
-	m_mutex.unlock();
 }
 
 AVPacket * WDecodeThread::pop()
@@ -79,7 +71,7 @@ void WDecodeThread::clear()
 	m_decode->clear();
 	while (!m_queue.empty())
 	{
-		AVPacket *pkt = pop();
+		AVPacket * pkt = m_queue.dequeue();
 		if (!pkt)
 			continue;
 

@@ -9,17 +9,8 @@
 WAudioThread::WAudioThread(QObject *parent /*= Q_NULLPTR*/)
 	: WDecodeThread(parent)
 {
-	// 创建重采样上下文
-	m_swrContext = swr_alloc();
-	if (!m_swrContext)
-	{
-		std::cerr << "Failed to allocate resampler context." << std::endl;
-	}
-
 	if (!m_play)
 		m_play = WAudioPlay::getInstance();
-
-
 }
 
 WAudioThread::~WAudioThread()
@@ -30,6 +21,10 @@ bool WAudioThread::open(AVCodecParameters *para)
 {
 	if (!para)
 		return false;
+
+	clear();
+
+	m_audioMutex.lock();
 
 	int ret = true;
 
@@ -43,6 +38,19 @@ bool WAudioThread::open(AVCodecParameters *para)
 	{
 		cout << "audio decode open failed!" << endl;
 		ret = false;
+	}
+
+	if (m_swrContext)
+	{
+		swr_close(m_swrContext);
+		swr_free(&m_swrContext);
+	}
+
+	// 创建重采样上下文
+	m_swrContext = swr_alloc();
+	if (!m_swrContext)
+	{
+		std::cerr << "Failed to allocate resampler context." << std::endl;
 	}
 
 	// 设置重采样参数
@@ -63,6 +71,8 @@ bool WAudioThread::open(AVCodecParameters *para)
 	}
 
 	m_pts = 0;
+
+	m_audioMutex.unlock();
 
 	return ret;
 }
@@ -167,6 +177,7 @@ void WAudioThread::run()
 			}
 
 			av_frame_free(&frame);
+			av_free(out_data[0]);
 			break;
 		}
 		m_audioMutex.unlock();

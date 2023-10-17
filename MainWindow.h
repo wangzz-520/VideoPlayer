@@ -1,12 +1,11 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QMouseEvent>
 #include "ui_MainWindow.h"
 #include "global.h"
 
-
 class WDemuxThread;
-
 
 class MainWindow : public QMainWindow
 {
@@ -20,6 +19,10 @@ private slots:
 	void slotActionOpen();
 	void slotSetPause(bool isPause);
 	void slotSeek(double pos);
+
+protected:
+	//Ë«»÷È«ÆÁ
+	void mouseDoubleClickEvent(QMouseEvent *e);
 
 private:
 	Ui::MainWindowClass ui;
