@@ -64,6 +64,8 @@ void WDecode::close()
 		avcodec_free_context(&m_pCodecCtx);
 	}
 
+	m_pts = 0;
+
 	m_mux.unlock();
 }
 
@@ -117,4 +119,14 @@ AVFrame* WDecode::recv()
 
 	m_pts = frame->pts;
 	return frame;
+}
+
+void WDecode::clear()
+{
+	m_mux.lock();
+	//«Â¿ÌΩ‚¬Îª∫≥Â
+	if (m_pCodecCtx)
+		avcodec_flush_buffers(m_pCodecCtx);
+
+	m_mux.unlock();
 }

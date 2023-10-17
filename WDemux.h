@@ -24,12 +24,18 @@ public:
 	virtual AVPacket *read();
 	//check isAudio
 	virtual bool isAudio(AVPacket *packet);
-
 	//获取视频参数  返回的空间需要清理  avcodec_parameters_free
 	virtual AVCodecParameters *videoPara();
-
 	//获取音频参数  返回的空间需要清理 avcodec_parameters_free
 	virtual AVCodecParameters *audioPara();
+	//seek 位置 pos 0.0 ~1.0
+	virtual bool seek(double pos);
+	//清空读取缓存
+	virtual void clear();
+	//close
+	virtual void close();
+	//只读视频，音频丢弃空间释放
+	virtual AVPacket *readVideo();
 
 public:
 	//视频index

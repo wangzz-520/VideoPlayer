@@ -22,6 +22,9 @@ public:
 
 	virtual void setParams(int index,double timeBase);
 
+	//清理队列
+	virtual void clear();
+
 protected:
 	WDecode *m_decode = nullptr;
 	bool m_isExit = false;

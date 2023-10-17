@@ -7,6 +7,7 @@
 #include "WDecodeThread.h"
 #include "global.h"
 
+class WAudioPlay;
 class WDecode;
 class WAudioThread : public WDecodeThread
 {
@@ -19,16 +20,15 @@ public:
 
 	virtual void close();
 
+	void setPause(bool isPause);
+
+	virtual void clear();
+
 protected:
 	void run();
 
-private:
-	void initOpenAL();
-	void releaseOpenAL();
-	void setALParams();
-
 public:
-	long long m_synpts = 0;
+	long long m_pts = 0;
 
 private:
 	QMutex m_audioMutex;
@@ -38,9 +38,7 @@ private:
 
 	SwrContext* m_swrContext = NULL;
 
-	double m_oneframeduration = 0;	//计算一帧数据持续时间 ms
-
-	long long m_IsplayBufferSize = 0;	//已经播放的队列数量
+	WAudioPlay *m_play = nullptr;
 };
 
 #endif // !_WVIDEOTHREAD_H_

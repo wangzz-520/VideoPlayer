@@ -82,6 +82,78 @@ void WDemuxThread::close()
 	m_mutex.unlock();
 }
 
+void WDemuxThread::setPause(bool isPause)
+{
+	m_mutex.lock();
+	m_isPause = isPause;
+	if (m_audioThread)
+		m_audioThread->setPause(isPause);
+	if (m_videoThread) 
+		m_videoThread->setPause(isPause);
+	m_mutex.unlock();
+}
+
+void WDemuxThread::seek(double pos)
+{
+	//清理缓存
+	clear();
+
+	m_mutex.lock();
+	bool status = this->m_isPause;
+	m_mutex.unlock();
+
+	//暂停
+	setPause(true);
+
+	m_mutex.lock();
+	if (m_demux)
+		m_demux->seek(pos);
+	//实际要显示的位置pts
+	long long seekPts = pos * m_demux->m_totalTime;
+	while (!m_isExit)
+	{
+		AVPacket *pkt = m_demux->readVideo();
+		if (!pkt)
+			break;
+		//如果解码到seekPts
+		if (m_videoThread->repaintPts(pkt, seekPts))
+		{
+			this->m_pts = seekPts;
+			break;
+		}
+		//bool re = vt->decode->Send(pkt);
+		//if (!re) break;
+		//AVFrame *frame = vt->decode->Recv();
+		//if (!frame) continue;
+		////到达位置
+		//if (frame->pts >= seekPts)
+		//{
+		//	this->pts = frame->pts;
+		//	vt->call->Repaint(frame);
+		//	break;
+		//}
+		//av_frame_free(&frame);
+	}
+
+	m_mutex.unlock();
+
+	//seek是非暂停状态
+	if (!status)
+		setPause(false);
+}
+
+void WDemuxThread::clear()
+{
+	m_mutex.lock();
+	if (m_demux)
+		m_demux->clear();
+	if (m_videoThread)
+		m_videoThread->clear();
+	if (m_audioThread)
+		m_audioThread->clear();
+	m_mutex.unlock();
+}
+
 void WDemuxThread::run()
 {
 	while (!m_isExit)
@@ -104,7 +176,8 @@ void WDemuxThread::run()
 		//视频同步音频
 		if (m_audioThread && m_videoThread)
 		{
-			m_videoThread->setSynPts(m_audioThread->m_synpts);
+			m_pts = m_audioThread->m_pts;
+			m_videoThread->setSynPts(m_audioThread->m_pts);
 		}
 
 		AVPacket *pkt = m_demux->read();

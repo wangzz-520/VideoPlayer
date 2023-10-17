@@ -1,7 +1,6 @@
 #include "DecodeThread.h"
 #include <QDebug>
 #include <chrono>
-#include "Audioplayer.h"
 #include <QTimer>
 
 static int watiInext2 = 0;

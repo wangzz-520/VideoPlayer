@@ -36,6 +36,8 @@ WCtrlBarWidget::WCtrlBarWidget(QWidget *parent)
 	connect(ui.btnPlayOrPause, &QPushButton::clicked, this, &WCtrlBarWidget::slotPlayOrPause);
 	connect(ui.btnStop, &QPushButton::clicked, this, &WCtrlBarWidget::slotStop);
 	connect(ui.btnVolume, &QPushButton::clicked, this, &WCtrlBarWidget::slotVolume);
+
+	connect(ui.playSlider, &WCustomSlider::sigCustomSliderValueChanged, this, &WCtrlBarWidget::sigSeek);
 }
 
 WCtrlBarWidget::~WCtrlBarWidget()

@@ -15,7 +15,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *ev);
     void mouseMoveEvent(QMouseEvent *ev);
 signals:
-    void sigCustomSliderValueChanged();//自定义的鼠标单击信号，用于捕获并处理
+    void sigCustomSliderValueChanged(double pos);//自定义的鼠标单击信号，用于捕获并处理
 
 private:
     bool mIsPressed = false;

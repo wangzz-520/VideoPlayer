@@ -31,7 +31,7 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>5.9_msvc2015_64</QtInstall>
-    <QtModules>core;gui;multimedia;widgets</QtModules>
+    <QtModules>core;opengl;gui;multimedia;widgets;openglextensions</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
@@ -92,11 +92,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Audioplayer.cpp" />
-    <ClCompile Include="DecodeThread.cpp" />
     <ClCompile Include="GlobalHelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="WAudioPlay.cpp" />
     <ClCompile Include="WAudioThread.cpp" />
     <ClCompile Include="WCtrlBarWidget.cpp" />
     <ClCompile Include="WCustomSlider.cpp" />
@@ -108,17 +107,14 @@
     <ClCompile Include="WVideoThread.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="DecodeThread.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="global.h" />
+    <ClInclude Include="WAudioPlay.h" />
     <ClInclude Include="WAudioThread.h" />
     <ClInclude Include="WDecode.h" />
     <ClInclude Include="WDecodeThread.h" />
     <ClInclude Include="WDemux.h" />
     <ClInclude Include="WDemuxThread.h" />
     <ClInclude Include="WVideoThread.h" />
-    <QtMoc Include="Audioplayer.h" />
     <ClInclude Include="GlobalHelper.h" />
     <QtMoc Include="MainWindow.h" />
     <QtMoc Include="WOpenGLWidget.h" />

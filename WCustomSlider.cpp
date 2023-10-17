@@ -18,7 +18,7 @@ void WCustomSlider::mousePressEvent(QMouseEvent *ev)
     double pos = ev->pos().x() / (double)width();
     setValue(pos * (maximum() - minimum()) + minimum());
 
-    emit sigCustomSliderValueChanged();
+    emit sigCustomSliderValueChanged(pos);
     mIsPressed = true;
 }
 
@@ -39,6 +39,6 @@ void WCustomSlider::mouseMoveEvent(QMouseEvent *ev)
         double pos = ev->pos().x() / (double)width();
         setValue(pos * (maximum() - minimum()) + minimum());
 
-        emit sigCustomSliderValueChanged();
+        emit sigCustomSliderValueChanged(pos);
     }
 }

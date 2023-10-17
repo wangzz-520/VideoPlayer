@@ -19,14 +19,12 @@ public:
 private slots:
 	void slotActionOpen();
 	void slotSetPause(bool isPause);
+	void slotSeek(double pos);
 
 private:
 	Ui::MainWindowClass ui;
 
 private:
-	//DecodeThread *m_thread = nullptr;
-
 	WDemuxThread *m_demuxThread = nullptr;
-
 
 };

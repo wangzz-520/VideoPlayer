@@ -40,6 +40,60 @@ void WVideoThread::setSynPts(long long pts)
 	m_synpts = pts;
 }
 
+void WVideoThread::setPause(bool isPause)
+{
+	m_videoMutex.lock();
+	m_isPause = isPause;
+	m_videoMutex.unlock();
+}
+
+bool WVideoThread::repaintPts(AVPacket *pkt, long long seekpts)
+{
+	m_videoMutex.lock();
+	bool re = m_decode->send(pkt);
+	if (!re)
+	{
+		m_videoMutex.unlock();
+		return true; //表示结束解码
+	}
+	AVFrame *frame = m_decode->recv();
+	if (!frame)
+	{
+		m_videoMutex.unlock();
+		return false;
+	}
+	uint8_t* buffer = NULL;
+	//到达位置
+	if (m_decode->m_pts >= seekpts)
+	{
+		if (m_func)
+		{
+			int width = frame->width;
+			int height = frame->height;
+
+			int ySize = frame->width * frame->height;
+			int uvSize = ySize / 4;
+			int totalSize = ySize + 2 * uvSize;
+	
+			buffer = new uint8_t[totalSize];
+			memset(buffer, 0, sizeof(buffer));
+			// 拷贝YUV420P数据到缓冲区
+			memcpy(buffer, frame->data[0], ySize); // 拷贝Y分量
+			memcpy(buffer + ySize, frame->data[1], uvSize); // 拷贝U分量
+			memcpy(buffer + ySize + uvSize, frame->data[2], uvSize); // 拷贝V分量
+			m_func(buffer, width, height);
+		}
+			
+		m_videoMutex.unlock();
+		return true;
+	}
+
+	av_frame_free(&frame);
+	delete[]buffer;
+	m_videoMutex.unlock();
+	return false;
+}
+
 void WVideoThread::run()
 {
 	uint8_t* buffer = NULL;

@@ -26,9 +26,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DecodeThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GlobalHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -42,9 +39,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MainWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Audioplayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WDemux.cpp">
@@ -65,11 +59,11 @@
     <ClCompile Include="WAudioThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WAudioPlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="DecodeThread.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="WCtrlBarWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -80,9 +74,6 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="MainWindow.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="Audioplayer.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -109,6 +100,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WAudioThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WAudioPlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

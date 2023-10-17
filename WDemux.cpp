@@ -179,6 +179,82 @@ AVCodecParameters * WDemux::audioPara()
 	return pa;
 }
 
+bool WDemux::seek(double pos)
+{
+	m_mux.lock();
+	if (!m_pFormatCtx)
+	{
+		m_mux.unlock();
+		return false;
+	}
+	//清理读取缓冲
+	avformat_flush(m_pFormatCtx);
+
+	long long seekPos = 0;
+	seekPos = m_pFormatCtx->streams[m_videoIndex]->duration * pos;
+	int re = av_seek_frame(m_pFormatCtx, m_videoIndex, seekPos, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_FRAME);
+	m_mux.unlock();
+	if (re < 0) 
+		return false;
+
+	return true;
+}
+
+void WDemux::clear()
+{
+	m_mux.lock();
+	if (!m_pFormatCtx)
+	{
+		m_mux.unlock();
+		return;
+	}
+	//清理读取缓冲
+	avformat_flush(m_pFormatCtx);
+	m_mux.unlock();
+}
+
+void WDemux::close()
+{
+	m_mux.lock();
+	if (!m_pFormatCtx)
+	{
+		m_mux.unlock();
+		return;
+	}
+	avformat_close_input(&m_pFormatCtx);
+	//媒体总时长（毫秒）
+	m_totalTime = 0;
+	m_mux.unlock();
+}
+
+AVPacket * WDemux::readVideo()
+{
+	m_mux.lock();
+	if (!m_pFormatCtx) //容错
+	{
+		m_mux.unlock();
+		return 0;
+	}
+	m_mux.unlock();
+
+	AVPacket *pkt = NULL;
+	//防止阻塞
+	for (int i = 0; i < 20; i++)
+	{
+		pkt = read();
+		if (!pkt)
+			break;
+
+		if (pkt->stream_index == m_videoIndex)
+		{
+			break;
+		}
+
+		av_packet_free(&pkt);
+	}
+	return pkt;
+}
+
 double WDemux::r2d(AVRational r)
 {
 	return r.den == 0 ? 0 : (double)r.num / (double)r.den;

@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	connect(ui.actionOpen, &QAction::triggered, this, &MainWindow::slotActionOpen);
 	connect(ui.ctrlBarWidget, &WCtrlBarWidget::sigPause, this, &MainWindow::slotSetPause);
+	connect(ui.ctrlBarWidget, &WCtrlBarWidget::sigSeek, this, &MainWindow::slotSeek);
 
 	if (!m_demuxThread)
 	{
@@ -46,15 +47,6 @@ void MainWindow::slotActionOpen()
 	if (fileName.isEmpty())
 		return;
 
-	//m_thread = new DecodeThread(this);
-	//connect(m_thread, &DecodeThread::sigData, ui.openGLWidget
-	//	, &WOpenGLWidget::slotReceiveVideoData);
-	//connect(m_thread, &DecodeThread::sigUpdateTime, ui.ctrlBarWidget, &WCtrlBarWidget::slotSetTime);
-	//connect(m_thread, &DecodeThread::sigStart, ui.ctrlBarWidget, &WCtrlBarWidget::slotStartPlay);
-
-	//m_thread->setUrl(fileName);
-	//m_thread->start();
-
 	VideoFunc videoFunc = std::bind(&WOpenGLWidget::slotReceiveVideoData, ui.openGLWidget,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
@@ -70,4 +62,12 @@ void MainWindow::slotActionOpen()
 
 void MainWindow::slotSetPause(bool isPause)
 {
+	if (m_demuxThread)
+		m_demuxThread->setPause(isPause);
+}
+
+void MainWindow::slotSeek(double pos)
+{
+	if (m_demuxThread)
+		m_demuxThread->seek(pos);
 }

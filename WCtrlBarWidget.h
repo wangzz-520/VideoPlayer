@@ -13,6 +13,7 @@ public:
 
 signals:
 	void sigPause(bool pause);
+	void sigSeek(double pos);
 
 public:
 	void slotSetTime(int curSec);

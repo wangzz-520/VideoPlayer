@@ -11,6 +11,7 @@ public:
 	//打开解码器
 	virtual bool open(AVCodecParameters *para);
 
+	//关闭
 	virtual void close();
 
 	//发送到解码线程，不管成功与否都释放pkt空间（对象和媒体内容）
@@ -18,6 +19,9 @@ public:
 
 	//获取解码数据,一次send可能需要多次Recv，获取缓冲中的数据Send NULL在Recv多次
 	virtual AVFrame* recv();
+
+	//清空资源
+	virtual void clear();
 
 public:
 	AVCodecContext *m_pCodecCtx = 0;

@@ -16,6 +16,11 @@ public:
 	virtual bool open(AVCodecParameters *para, VideoFunc func, TimeFunc timeFunc);
 
 	virtual void setSynPts(long long pts);
+	
+	void setPause(bool isPause);
+
+	//解码pts，如果接收到的解码数据pts >= seekpts return true 并且显示画面
+	virtual bool repaintPts(AVPacket *pkt, long long seekpts);
 
 protected:
 	void run();

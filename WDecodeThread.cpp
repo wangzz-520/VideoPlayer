@@ -72,3 +72,19 @@ void WDecodeThread::setParams(int index, double timeBase)
 	m_index = index;
 	m_timeBase = timeBase;
 }
+
+void WDecodeThread::clear()
+{
+	m_mutex.lock();
+	m_decode->clear();
+	while (!m_queue.empty())
+	{
+		AVPacket *pkt = pop();
+		if (!pkt)
+			continue;
+
+		av_packet_free(&pkt);
+	}
+
+	m_mutex.unlock();
+}

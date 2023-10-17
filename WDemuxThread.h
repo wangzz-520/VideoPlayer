@@ -20,6 +20,12 @@ public:
 
 	void close();
 
+	void setPause(bool isPause);
+
+	void seek(double pos);
+
+	void clear();
+
 protected:
 	void run();
 
@@ -35,6 +41,8 @@ private:
 	WVideoThread *m_videoThread = nullptr;
 
 	QMutex m_mutex;
+
+	long long m_pts = 0;
 };
 
 #endif // 
