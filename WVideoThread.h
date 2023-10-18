@@ -13,7 +13,8 @@ public:
 	virtual ~WVideoThread();
 
 public:
-	virtual bool open(AVCodecParameters *para, VideoFunc func, TimeFunc timeFunc);
+	virtual bool open(AVCodecParameters *para, VideoDataFunc func, 
+		VideoInfoFunc infoFunc,TimeFunc timeFunc);
 
 	virtual void setSynPts(long long pts);
 	
@@ -22,6 +23,8 @@ public:
 	//解码pts，如果接收到的解码数据pts >= seekpts return true 并且显示画面
 	virtual bool repaintPts(AVPacket *pkt, long long seekpts);
 
+	virtual void setParams(int index, double timeBase,int width,int height);
+
 protected:
 	void run();
 
@@ -29,11 +32,16 @@ private:
 	QMutex m_videoMutex;
 	bool m_isPause = false;
 
-	VideoFunc m_func;
+	VideoDataFunc m_func;
+
+	VideoInfoFunc m_infoFunc;
 
 	TimeFunc m_timeFunc;
 
 	long long m_synpts = 0;
+
+	int m_width = 0;
+	int m_height = 0;
 };
 
 #endif // !_WVIDEOTHREAD_H_

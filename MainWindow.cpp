@@ -46,8 +46,11 @@ void MainWindow::slotActionOpen()
 	if (fileName.isEmpty())
 		return;
 
-	VideoFunc videoFunc = std::bind(&WOpenGLWidget::slotReceiveVideoData, ui.openGLWidget,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	VideoDataFunc videoFunc = std::bind(&WOpenGLWidget::slotReceiveVideoData, ui.openGLWidget,
+		std::placeholders::_1);
+
+	VideoInfoFunc videoInfoFunc = std::bind(&WOpenGLWidget::slotOpenVideo, ui.openGLWidget,
+		std::placeholders::_1, std::placeholders::_2);
 
 	TotalTimeFunc totalTimeFunc = std::bind(&WCtrlBarWidget::slotStartPlay, ui.ctrlBarWidget,
 		std::placeholders::_1);
@@ -55,7 +58,7 @@ void MainWindow::slotActionOpen()
 	TimeFunc timeFunc = std::bind(&WCtrlBarWidget::slotSetTime, ui.ctrlBarWidget,
 		std::placeholders::_1);
 
-	m_demuxThread->open(fileName.toStdString().c_str(), videoFunc, totalTimeFunc, timeFunc);
+	m_demuxThread->open(fileName.toStdString().c_str(), videoFunc, videoInfoFunc, totalTimeFunc, timeFunc);
 
 }
 

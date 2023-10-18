@@ -34,7 +34,9 @@ using namespace std;
 
 #pragma execution_character_set("utf-8")
 
-typedef std::function<void(uint8_t*, int, int)> VideoFunc;
+typedef std::function<void(uint8_t*)> VideoDataFunc;
+
+typedef std::function<void(int, int)> VideoInfoFunc;
 
 typedef std::function<void(int64_t)> TotalTimeFunc;
 

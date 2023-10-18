@@ -30,7 +30,8 @@ WDemuxThread::~WDemuxThread()
 
 }
 
-bool WDemuxThread::open(const char *url, VideoFunc func, TotalTimeFunc totalTimeFunc, TimeFunc timeFunc)
+bool WDemuxThread::open(const char *url, VideoDataFunc func, VideoInfoFunc infoFunc,
+	TotalTimeFunc totalTimeFunc, TimeFunc timeFunc)
 {
 	if (!m_demux)
 		return false;
@@ -47,7 +48,7 @@ bool WDemuxThread::open(const char *url, VideoFunc func, TotalTimeFunc totalTime
 	}
 
 	//打开视频解码器和处理线程
-	if (!m_videoThread->open(m_demux->videoPara(), func,timeFunc))
+	if (!m_videoThread->open(m_demux->videoPara(), func, infoFunc,timeFunc))
 	{
 		ret = false;
 		cout << "m_videoThread->Open failed!" << endl;
@@ -59,7 +60,8 @@ bool WDemuxThread::open(const char *url, VideoFunc func, TotalTimeFunc totalTime
 		cout << "m_audioThread->Open failed!" << endl;
 	}
 
-	m_videoThread->setParams(m_demux->m_videoIndex, m_demux->m_vTimeBase);
+	m_videoThread->setParams(m_demux->m_videoIndex, m_demux->m_vTimeBase, 
+		m_demux->m_width,m_demux->m_height);
 	m_audioThread->setParams(m_demux->m_audioIndex, m_demux->m_aTimeBase);
 
 	m_mutex.unlock();

@@ -42,7 +42,8 @@ public:
 	~WOpenGLWidget();
 
 public:
-	void slotReceiveVideoData(uint8_t* yuvBuffer, int width, int height);
+	void slotOpenVideo(int width,int height);
+	void slotReceiveVideoData(uint8_t* yuvBuffer);
 
 protected:
     virtual void initializeGL();
