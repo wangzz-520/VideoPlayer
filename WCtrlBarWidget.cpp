@@ -16,12 +16,6 @@ WCtrlBarWidget::WCtrlBarWidget(QWidget *parent)
 {
 	ui.setupUi(this);
 
-	GlobalHelper::SetIcon(ui.btnPlayOrPause, 12, QChar(0xf04b));
-	GlobalHelper::SetIcon(ui.btnStop, 12, QChar(0xf04d));
-	GlobalHelper::SetIcon(ui.btnVolume, 12, QChar(0xf028));
-	GlobalHelper::SetIcon(ui.btnForward, 12, QChar(0xf051));
-	GlobalHelper::SetIcon(ui.btnBackward, 12, QChar(0xf048));
-
 	ui.btnVolume->setToolTip("静音");
 	ui.btnForward->setToolTip("下一个");
 	ui.btnBackward->setToolTip("上一个");
