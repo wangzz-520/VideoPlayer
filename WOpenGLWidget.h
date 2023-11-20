@@ -44,6 +44,7 @@ public:
 public:
 	void slotOpenVideo(int width,int height);
 	void slotReceiveVideoData(uint8_t* yuvBuffer);
+	void clear();
 
 protected:
     virtual void initializeGL();
@@ -58,6 +59,7 @@ private:
     GLuint m_EBO = 0;
 
 	OpenGLDisplayImpl *m_impl = nullptr;
+	bool m_isShowVideo = false;
 };
 
 #endif // WOPENGLWIDGET_H

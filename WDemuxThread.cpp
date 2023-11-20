@@ -10,18 +10,6 @@ WDemuxThread::WDemuxThread(QObject *parent /*= Q_NULLPTR*/)
 	if (!m_demux)
 		m_demux = new WDemux();
 
-	if (!m_audioThread)
-		m_audioThread = new WAudioThread();
-
-	if (!m_videoThread) 
-		m_videoThread = new WVideoThread();
-
-	if (m_audioThread)
-		m_audioThread->start();
-
-	if (m_videoThread)
-		m_videoThread->start();
-
 	m_mutex.unlock();
 }
 
@@ -37,6 +25,12 @@ bool WDemuxThread::open(const char *url, VideoDataFunc func, VideoInfoFunc infoF
 		return false;
 
 	m_mutex.lock();
+
+	if (!m_audioThread)
+		m_audioThread = new WAudioThread();
+
+	if (!m_videoThread)
+		m_videoThread = new WVideoThread();
 
 	//打开解封装
 	bool ret = m_demux->open(url, totalTimeFunc);
@@ -64,6 +58,12 @@ bool WDemuxThread::open(const char *url, VideoDataFunc func, VideoInfoFunc infoF
 		m_demux->m_width,m_demux->m_height);
 	m_audioThread->setParams(m_demux->m_audioIndex, m_demux->m_aTimeBase);
 
+	if (m_audioThread && !m_audioThread->isRunning())
+		m_audioThread->start();
+
+	if (m_videoThread && !m_videoThread->isRunning())
+		m_videoThread->start();
+
 	m_mutex.unlock();
 	return true;
 }
@@ -72,13 +72,12 @@ void WDemuxThread::close()
 {
 	m_isExit = true;
 	wait();
+	m_mutex.lock();
 	if (m_audioThread)
 		m_audioThread->close();
 
 	if (m_videoThread)
 		m_videoThread->close();
-
-	m_mutex.lock();
 	delete m_audioThread;
 	delete m_videoThread;
 	m_videoThread = NULL;

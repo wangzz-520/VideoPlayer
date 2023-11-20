@@ -62,6 +62,9 @@
     <ClCompile Include="WAudioPlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SlideAnimationWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="WCtrlBarWidget.h">
@@ -74,6 +77,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="MainWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SlideAnimationWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -111,6 +117,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="MainWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="SlideAnimationWidget.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

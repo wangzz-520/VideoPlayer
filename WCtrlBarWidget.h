@@ -14,16 +14,17 @@ public:
 signals:
 	void sigPause(bool pause);
 	void sigSeek(double pos);
+	void sigBackward();
+	void sigForward();
+	void sigStop();
 
 public:
 	void slotSetTime(int curSec);
 	void slotStartPlay(int totalSec);
+	void clear();
 
 private slots:
-	void slotBackward();
-	void slotForward();
 	void slotPlayOrPause();
-	void slotStop();
 	void slotVolume();
 
 private:

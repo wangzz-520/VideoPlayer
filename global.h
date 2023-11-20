@@ -32,6 +32,8 @@ using namespace std;
 #include <functional>
 #include <mutex>
 
+#include "GlobalHelper.h"
+
 #pragma execution_character_set("utf-8")
 
 typedef std::function<void(uint8_t*)> VideoDataFunc;
@@ -41,5 +43,10 @@ typedef std::function<void(int, int)> VideoInfoFunc;
 typedef std::function<void(int64_t)> TotalTimeFunc;
 
 typedef std::function<void(int)> TimeFunc;
+
+#define SLIDE_MIN_WIDTH 20      //侧边栏滑出最小的宽度
+#define SLIDE_MAX_WIDTH 300     //侧边栏滑出最大的宽度
+#define POS_X 20
+#define POS_Y 26
 
 #endif // _GLOBAL_H_

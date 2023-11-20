@@ -25,6 +25,69 @@ WOpenGLWidget::WOpenGLWidget(QWidget* parent)
 
 WOpenGLWidget::~WOpenGLWidget()
 {
+	clear();
+}
+
+void WOpenGLWidget::slotOpenVideo(int width, int height)
+{
+	m_impl->videoW = width;
+	m_impl->videoH = height;
+
+	if (m_impl->buffer[0])
+	{
+		delete []m_impl->buffer[0];
+		m_impl->buffer[0] = new unsigned char[width * height];//y
+	}
+
+	if (m_impl->buffer[1])
+	{
+		delete[]m_impl->buffer[1];
+		m_impl->buffer[1] = new unsigned char[width * height / 4];//u
+	}
+
+	if (m_impl->buffer[2])
+	{
+		delete[]m_impl->buffer[2];
+		m_impl->buffer[2] = new unsigned char[width * height / 4];//v
+	}
+
+	resize(this->width(), this->height());
+
+	m_isShowVideo = true;
+}
+
+void WOpenGLWidget::slotReceiveVideoData(uint8_t* yuvBuffer)
+{
+	if (!m_impl)
+		return;
+
+	if (!m_impl->buffer[0])
+	{
+		m_impl->buffer[0] = new unsigned char[m_impl->videoW * m_impl->videoH];//y
+	}
+		
+	if (!m_impl->buffer[1])
+	{
+		m_impl->buffer[1] = new unsigned char[m_impl->videoW * m_impl->videoH / 4];//u
+	}
+
+	if (!m_impl->buffer[2])
+	{
+		m_impl->buffer[2] = new unsigned char[m_impl->videoW * m_impl->videoH / 4];//v
+	}
+
+	memcpy(m_impl->buffer[0], yuvBuffer, m_impl->videoW * m_impl->videoH);
+	memcpy(m_impl->buffer[1], yuvBuffer+ m_impl->videoW * m_impl->videoH, 
+		m_impl->videoW * m_impl->videoH /4);
+	memcpy(m_impl->buffer[2], yuvBuffer+ 5 * m_impl->videoW * m_impl->videoH / 4, 
+		m_impl->videoW * m_impl->videoH /4);
+
+	update();
+}
+
+
+void WOpenGLWidget::clear()
+{
 	if (m_impl)
 	{
 		if (m_impl->buffer[0]) {
@@ -60,63 +123,9 @@ WOpenGLWidget::~WOpenGLWidget()
 		delete m_impl;
 		m_impl = nullptr;
 	}
+
+	m_isShowVideo = false;
 }
-
-void WOpenGLWidget::slotOpenVideo(int width, int height)
-{
-	m_impl->videoW = width;
-	m_impl->videoH = height;
-
-	if (m_impl->buffer[0])
-	{
-		delete []m_impl->buffer[0];
-		m_impl->buffer[0] = new unsigned char[width * height];//y
-	}
-
-	if (m_impl->buffer[1])
-	{
-		delete[]m_impl->buffer[1];
-		m_impl->buffer[1] = new unsigned char[width * height / 4];//u
-	}
-
-	if (m_impl->buffer[2])
-	{
-		delete[]m_impl->buffer[2];
-		m_impl->buffer[2] = new unsigned char[width * height / 4];//v
-	}
-
-	resize(this->width(), this->height());
-}
-
-void WOpenGLWidget::slotReceiveVideoData(uint8_t* yuvBuffer)
-{
-	if (!m_impl)
-		return;
-
-	if (!m_impl->buffer[0])
-	{
-		m_impl->buffer[0] = new unsigned char[m_impl->videoW * m_impl->videoH];//y
-	}
-		
-	if (!m_impl->buffer[1])
-	{
-		m_impl->buffer[1] = new unsigned char[m_impl->videoW * m_impl->videoH / 4];//u
-	}
-
-	if (!m_impl->buffer[2])
-	{
-		m_impl->buffer[2] = new unsigned char[m_impl->videoW * m_impl->videoH / 4];//v
-	}
-
-	memcpy(m_impl->buffer[0], yuvBuffer, m_impl->videoW * m_impl->videoH);
-	memcpy(m_impl->buffer[1], yuvBuffer+ m_impl->videoW * m_impl->videoH, 
-		m_impl->videoW * m_impl->videoH /4);
-	memcpy(m_impl->buffer[2], yuvBuffer+ 5 * m_impl->videoW * m_impl->videoH / 4, 
-		m_impl->videoW * m_impl->videoH /4);
-
-	update();
-}
-
 
 void WOpenGLWidget::initializeGL()
 {
@@ -176,52 +185,55 @@ void WOpenGLWidget::initializeGL()
 
 void WOpenGLWidget::paintGL()
 {
-	glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-    m_program->bind();
-	m_impl->textureY->bind(0);
-	m_impl->textureU->bind(1);
-	m_impl->textureV->bind(2);
+	if (m_isShowVideo)
+	{
+		m_program->bind();
+		m_impl->textureY->bind(0);
+		m_impl->textureU->bind(1);
+		m_impl->textureV->bind(2);
 
-    //激活纹理单元0
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_impl->textureY->textureId());
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_impl->videoW,
-		m_impl->videoH, 0, GL_RED, GL_UNSIGNED_BYTE, m_impl->buffer[0]);
-    //设置纹理环绕方式
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		//激活纹理单元0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_impl->textureY->textureId());
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_impl->videoW,
+			m_impl->videoH, 0, GL_RED, GL_UNSIGNED_BYTE, m_impl->buffer[0]);
+		//设置纹理环绕方式
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    //激活纹理单元1
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_impl->textureU->textureId());
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_impl->videoW / 2, m_impl->videoH / 2
-		, 0, GL_RED, GL_UNSIGNED_BYTE, m_impl->buffer[1]);
-    //设置纹理环绕方式
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		//激活纹理单元1
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, m_impl->textureU->textureId());
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_impl->videoW / 2, m_impl->videoH / 2
+			, 0, GL_RED, GL_UNSIGNED_BYTE, m_impl->buffer[1]);
+		//设置纹理环绕方式
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	//激活纹理单元2
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, m_impl->textureV->textureId());
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_impl->videoW / 2, m_impl->videoH / 2
-		, 0, GL_RED, GL_UNSIGNED_BYTE, m_impl->buffer[2]);
-	//设置纹理环绕方式
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		//激活纹理单元2
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, m_impl->textureV->textureId());
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_impl->videoW / 2, m_impl->videoH / 2
+			, 0, GL_RED, GL_UNSIGNED_BYTE, m_impl->buffer[2]);
+		//设置纹理环绕方式
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glBindVertexArray(m_VAO);//绑定VAO
-    glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_INT,0);
+		glBindVertexArray(m_VAO);//绑定VAO
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	}
 }
 
 void WOpenGLWidget::resizeGL(int w, int h)

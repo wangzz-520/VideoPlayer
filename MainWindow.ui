@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>624</width>
-    <height>411</height>
+    <width>611</width>
+    <height>490</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,7 +70,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>624</width>
+     <width>611</width>
      <height>23</height>
     </rect>
    </property>
@@ -79,6 +79,7 @@
      <string>媒体</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpenMore"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -94,6 +95,11 @@
   <action name="actionOpen">
    <property name="text">
     <string>打开</string>
+   </property>
+  </action>
+  <action name="actionOpenMore">
+   <property name="text">
+    <string>打开多个文件</string>
    </property>
   </action>
  </widget>

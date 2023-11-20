@@ -6,6 +6,7 @@
 #include "global.h"
 
 class WDemuxThread;
+class SlideAnimationWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -17,12 +18,21 @@ public:
 
 private slots:
 	void slotActionOpen();
+	void slotActionOpenMore();
 	void slotSetPause(bool isPause);
 	void slotSeek(double pos);
 
 protected:
 	//Ë«»÷È«ÆÁ
 	void mouseDoubleClickEvent(QMouseEvent *e);
+	virtual void resizeEvent(QResizeEvent *event);
+	virtual void showEvent(QShowEvent *event);
+
+private slots:
+	void slotShowVideo(const QString &fileName);
+	void slotBackward();
+	void slotForward();
+	void slotStop();
 
 private:
 	Ui::MainWindowClass ui;
@@ -30,4 +40,7 @@ private:
 private:
 	WDemuxThread *m_demuxThread = nullptr;
 
+	SlideAnimationWidget *m_animationWidget = nullptr;
+
+	bool m_isInit = false;
 };

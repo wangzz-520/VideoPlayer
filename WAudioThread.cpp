@@ -34,6 +34,10 @@ bool WAudioThread::open(AVCodecParameters *para)
 		ret = false;
 	}
 
+	//´ò¿ª½âÂëÆ÷
+	if (!m_decode)
+		m_decode = new WDecode();
+
 	if (!m_decode->open(para))
 	{
 		cout << "audio decode open failed!" << endl;
@@ -117,7 +121,7 @@ void WAudioThread::run()
 	while (!m_isExit)
 	{
 		m_audioMutex.lock();
-		if (m_isPause)
+		if (m_isPause || !m_decode)
 		{
 			m_audioMutex.unlock();
 			msleep(5);

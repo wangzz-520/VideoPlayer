@@ -105,6 +105,7 @@
     <ClCompile Include="GlobalHelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="SlideAnimationWidget.cpp" />
     <ClCompile Include="WAudioPlay.cpp" />
     <ClCompile Include="WAudioThread.cpp" />
     <ClCompile Include="WCtrlBarWidget.cpp" />
@@ -118,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="global.h" />
+    <QtMoc Include="SlideAnimationWidget.h" />
     <ClInclude Include="WAudioPlay.h" />
     <ClInclude Include="WAudioThread.h" />
     <ClInclude Include="WDecode.h" />
@@ -133,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="MainWindow.ui" />
+    <QtUic Include="SlideAnimationWidget.ui" />
     <QtUic Include="WCtrlBarWidget.ui" />
   </ItemGroup>
   <ItemGroup>

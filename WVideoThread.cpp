@@ -29,6 +29,10 @@ bool WVideoThread::open(AVCodecParameters *para, VideoDataFunc func,
 	m_videoMutex.lock();
 	m_synpts = 0;
 	int ret = true;
+	//打开解码器
+	if (!m_decode)
+		m_decode = new WDecode();
+
 	if (!m_decode->open(para))
 	{
 		m_videoMutex.unlock();
@@ -122,7 +126,7 @@ void WVideoThread::run()
 	while (!m_isExit)
 	{
 		m_videoMutex.lock();
-		if (m_isPause)
+		if (!m_decode || m_isPause)
 		{
 			m_videoMutex.unlock();
 			msleep(5);
@@ -136,9 +140,9 @@ void WVideoThread::run()
 			msleep(1);
 			continue;
 		}
-		
+
 		AVPacket *pkt = pop();
-		
+
 		bool ret = m_decode->send(pkt);
 		if (!ret)
 		{
@@ -179,17 +183,17 @@ void WVideoThread::run()
 					int j = 0;
 					for (int i = 0; i < height; i++)
 					{
-						memcpy(buffer + j, frame->data[0] + i * frame->linesize[0],width);
+						memcpy(buffer + j, frame->data[0] + i * frame->linesize[0], width);
 						j += width;
 					}
 					for (int i = 0; i < height / 2; i++)
 					{
-						memcpy(buffer + j, frame->data[1] + i * frame->linesize[1],width / 2);
+						memcpy(buffer + j, frame->data[1] + i * frame->linesize[1], width / 2);
 						j += width / 2;
 					}
 					for (int i = 0; i < height / 2; i++)
 					{
-						memcpy(buffer + j, frame->data[2] + i * frame->linesize[2],width / 2);
+						memcpy(buffer + j, frame->data[2] + i * frame->linesize[2], width / 2);
 						j += width / 2;
 					}
 				}
@@ -200,7 +204,7 @@ void WVideoThread::run()
 				//发送信号，yuv数据
 				m_func(buffer);
 
-				delete []buffer;
+				delete[]buffer;
 			}break;
 			case AV_PIX_FMT_YUV422P:
 			{

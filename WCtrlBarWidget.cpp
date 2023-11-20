@@ -11,6 +11,20 @@ static QString pauseStyle = "QPushButton#btnPlayOrPause\
 	border-image:url(\":/image/image/pause.png\");\
 }";
 
+static QPalette colorTheme(const QColor& base)
+{
+	QPalette palette;
+	palette.setColor(QPalette::Base, base);
+	palette.setColor(QPalette::Window, base.darker(150));
+	palette.setColor(QPalette::Mid, base.darker(110));
+	palette.setColor(QPalette::Light, base.lighter(170));
+	palette.setColor(QPalette::Dark, base.darker(170));
+	palette.setColor(QPalette::Text, base.darker(200).lighter(800));
+	palette.setColor(QPalette::WindowText, base.darker(200));
+
+	return palette;
+}
+
 WCtrlBarWidget::WCtrlBarWidget(QWidget *parent)
 	: QWidget(parent)
 {
@@ -22,13 +36,14 @@ WCtrlBarWidget::WCtrlBarWidget(QWidget *parent)
 	ui.btnStop->setToolTip("Í£Ö¹");
 	ui.btnPlayOrPause->setToolTip("²¥·Å");
 
-	QString qss = GlobalHelper::GetQssStr(":/qss/qss/WCtrlBarWidget.qss");
-	setStyleSheet(qss);
+	setStyleSheet(GlobalHelper::GetQssStr(":/qss/qss/WCtrlBarWidget.qss"));
 
-	connect(ui.btnBackward, &QPushButton::clicked, this, &WCtrlBarWidget::slotBackward);
-	connect(ui.btnForward, &QPushButton::clicked, this, &WCtrlBarWidget::slotForward);
+	//setPalette(colorTheme(QColor(Qt::darkGray).darker(70)));
+
+	connect(ui.btnBackward, &QPushButton::clicked, this, &WCtrlBarWidget::sigBackward);
+	connect(ui.btnForward, &QPushButton::clicked, this, &WCtrlBarWidget::sigForward);
 	connect(ui.btnPlayOrPause, &QPushButton::clicked, this, &WCtrlBarWidget::slotPlayOrPause);
-	connect(ui.btnStop, &QPushButton::clicked, this, &WCtrlBarWidget::slotStop);
+	connect(ui.btnStop, &QPushButton::clicked, this, &WCtrlBarWidget::sigStop);
 	connect(ui.btnVolume, &QPushButton::clicked, this, &WCtrlBarWidget::slotVolume);
 
 	connect(ui.playSlider, &WCustomSlider::sigCustomSliderValueChanged, this, &WCtrlBarWidget::sigSeek);
@@ -67,14 +82,12 @@ void WCtrlBarWidget::slotStartPlay(int totalSec)
 	m_isStartPlay = true;
 }
 
-void WCtrlBarWidget::slotBackward()
+void WCtrlBarWidget::clear()
 {
-
-}
-
-void WCtrlBarWidget::slotForward()
-{
-
+	QTime TotalTime;
+	ui.playSlider->setValue(0);
+	ui.videoPlayTimeTimeEdit->setTime(TotalTime);
+	ui.videoPlayTimeTimeEdit->setTime(TotalTime);
 }
 
 void WCtrlBarWidget::slotPlayOrPause()
@@ -93,11 +106,6 @@ void WCtrlBarWidget::slotPlayOrPause()
 	}
 	
 	emit sigPause(!m_isStartPlay);
-}
-
-void WCtrlBarWidget::slotStop()
-{
-
 }
 
 void WCtrlBarWidget::slotVolume()

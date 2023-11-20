@@ -4,9 +4,7 @@
 WDecodeThread::WDecodeThread(QObject *parent /*= Q_NULLPTR*/)
 	: QThread(parent)
 {
-	//´ò¿ª½âÂëÆ÷
-	if (!m_decode)
-		m_decode = new WDecode();
+
 }
 
 WDecodeThread::~WDecodeThread()
@@ -68,7 +66,8 @@ void WDecodeThread::setParams(int index, double timeBase)
 void WDecodeThread::clear()
 {
 	m_mutex.lock();
-	m_decode->clear();
+	if(m_decode)
+		m_decode->clear();
 	while (!m_queue.empty())
 	{
 		AVPacket * pkt = m_queue.dequeue();

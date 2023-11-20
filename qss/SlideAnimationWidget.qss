@@ -1,0 +1,31 @@
+QFrame#frame 
+{
+	background-color: rgba(100,100, 100, 100);
+}
+QLabel#label
+{
+    border-image:url(":/image/image/left.png");
+}
+QLabel#label_2
+{
+    color: rgb(255, 255, 255);
+}
+QListView#listView
+{
+    background-color: transparent;
+    color: rgb(255, 255, 255);
+}
+QListView::item:selected:!active {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #ABAFE5, stop: 1 #8588B2);
+}
+QListView#listView::item:selected 
+{
+	border: 1px solid #6a6ea9;
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                  stop: 0 #6a6ea9, stop: 1 #888dd9);
+}
+QListView#listView::item:alternate 
+{
+	background: #EEEEEE;
+}

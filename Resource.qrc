@@ -11,9 +11,11 @@
         <file>image/stop.png</file>
         <file>image/voice_off.png</file>
         <file>image/voice_on.png</file>
+        <file>image/left.png</file>
     </qresource>
     <qresource prefix="/qss">
         <file>qss/MainWidget.qss</file>
         <file>qss/WCtrlBarWidget.qss</file>
+        <file>qss/SlideAnimationWidget.qss</file>
     </qresource>
 </RCC>
