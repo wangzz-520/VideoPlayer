@@ -54,6 +54,8 @@ bool WDecode::open(AVCodecParameters *para)
 		return false;
 	}
 
+	m_pCodecCtx->thread_count = 1; // 解码线程会影响内部缓存即： codec_ctx_->delay = codec_ctx_->thread_count - 1，打开解码器之前将codec_ctx_->thread_count设置为1，内部将不进行缓存
+
 	m_mux.unlock();
 	return true;
 }
@@ -65,6 +67,7 @@ void WDecode::close()
 	{
 		avcodec_close(m_pCodecCtx);
 		avcodec_free_context(&m_pCodecCtx);
+		m_pCodecCtx = NULL;
 	}
 
 	m_pts = 0;
@@ -88,6 +91,7 @@ bool WDecode::send(AVPacket *pkt)
 	}
 
 	int ret = avcodec_send_packet(m_pCodecCtx, pkt);
+
 	m_mux.unlock();
 	av_packet_free(&pkt);
 	if (ret != 0)

@@ -1,6 +1,7 @@
 #include "WOpenGLWidget.h"
 #include <QDebug>
 #include <QTimer>
+#include <QElapsedTimer>
 
 static float vertices[] = {
 //     ---- 位置 ----    - 纹理坐标 -
@@ -20,40 +21,68 @@ WOpenGLWidget::WOpenGLWidget(QWidget* parent)
     : QOpenGLWidget(parent)
 	, m_impl(new OpenGLDisplayImpl)
 {
-
+	QSurfaceFormat format;
+	format.setVersion(3, 3); // 设置OpenGL版本为3.3或更高
+	format.setProfile(QSurfaceFormat::CoreProfile); // 使用核心配置文件
+	QSurfaceFormat::setDefaultFormat(format); // 设置默认格式
 }
 
 WOpenGLWidget::~WOpenGLWidget()
 {
 	clear();
+
+	if (m_impl->textureY)
+	{
+		m_impl->textureY->destroy();
+	}
+
+	if (m_impl->textureU)
+	{
+		m_impl->textureU->destroy();
+	}
+
+	if (m_impl->textureV)
+	{
+		m_impl->textureV->destroy();
+	}
+
+	delete m_impl;
+	m_impl = nullptr;
 }
 
 void WOpenGLWidget::slotOpenVideo(int width, int height)
 {
+	m_mux.lock();
+	m_isShowVideo = false;
 	m_impl->videoW = width;
 	m_impl->videoH = height;
 
 	if (m_impl->buffer[0])
 	{
 		delete []m_impl->buffer[0];
-		m_impl->buffer[0] = new unsigned char[width * height];//y
+		m_impl->buffer[0] = nullptr;	
 	}
 
 	if (m_impl->buffer[1])
 	{
 		delete[]m_impl->buffer[1];
-		m_impl->buffer[1] = new unsigned char[width * height / 4];//u
+		m_impl->buffer[1] = nullptr;
 	}
 
 	if (m_impl->buffer[2])
 	{
 		delete[]m_impl->buffer[2];
-		m_impl->buffer[2] = new unsigned char[width * height / 4];//v
+		m_impl->buffer[2] = nullptr;	
 	}
+
+	m_impl->buffer[0] = new unsigned char[width * height];//y
+	m_impl->buffer[1] = new unsigned char[width * height / 4];//u
+	m_impl->buffer[2] = new unsigned char[width * height / 4];//v
 
 	resize(this->width(), this->height());
 
 	m_isShowVideo = true;
+	m_mux.unlock();
 }
 
 void WOpenGLWidget::slotReceiveVideoData(uint8_t* yuvBuffer)
@@ -61,33 +90,20 @@ void WOpenGLWidget::slotReceiveVideoData(uint8_t* yuvBuffer)
 	if (!m_impl)
 		return;
 
-	if (!m_impl->buffer[0])
-	{
-		m_impl->buffer[0] = new unsigned char[m_impl->videoW * m_impl->videoH];//y
-	}
-		
-	if (!m_impl->buffer[1])
-	{
-		m_impl->buffer[1] = new unsigned char[m_impl->videoW * m_impl->videoH / 4];//u
-	}
-
-	if (!m_impl->buffer[2])
-	{
-		m_impl->buffer[2] = new unsigned char[m_impl->videoW * m_impl->videoH / 4];//v
-	}
-
+	m_mux.lock();
 	memcpy(m_impl->buffer[0], yuvBuffer, m_impl->videoW * m_impl->videoH);
 	memcpy(m_impl->buffer[1], yuvBuffer+ m_impl->videoW * m_impl->videoH, 
 		m_impl->videoW * m_impl->videoH /4);
 	memcpy(m_impl->buffer[2], yuvBuffer+ 5 * m_impl->videoW * m_impl->videoH / 4, 
 		m_impl->videoW * m_impl->videoH /4);
-
+	m_mux.unlock();
 	update();
 }
 
 
 void WOpenGLWidget::clear()
 {
+	m_mux.lock();
 	if (m_impl)
 	{
 		if (m_impl->buffer[0]) {
@@ -104,31 +120,15 @@ void WOpenGLWidget::clear()
 			delete m_impl->buffer[2];
 			m_impl->buffer[2] = nullptr;
 		}
-
-		if (m_impl->textureY)
-		{
-			m_impl->textureY->destroy();
-		}
-
-		if (m_impl->textureU)
-		{
-			m_impl->textureU->destroy();
-		}
-
-		if (m_impl->textureV)
-		{
-			m_impl->textureV->destroy();
-		}
-
-		delete m_impl;
-		m_impl = nullptr;
 	}
 
 	m_isShowVideo = false;
+	m_mux.unlock();
 }
 
 void WOpenGLWidget::initializeGL()
 {
+	m_mux.lock();
     initializeOpenGLFunctions();
 
     m_program = new QOpenGLShaderProgram();
@@ -172,24 +172,26 @@ void WOpenGLWidget::initializeGL()
 	m_program->setUniformValue("tex_u", 1);
 	m_program->setUniformValue("tex_v", 2);
 
-	glClearColor(0.3, 0.3, 0.3, 0.0); // 设置背景色
-	glClear(GL_COLOR_BUFFER_BIT);
+	m_mux.unlock();
 
 	// 启动定时器
 	QTimer *ti = new QTimer(this);
 	connect(ti, &QTimer::timeout, this, [=] {
 		update();
 	});
-	ti->start(40);
+	ti->start(100);
 }
 
 void WOpenGLWidget::paintGL()
 {
+	qDebug()<<"paintGL";
+	
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	m_mux.lock();
 	if (m_isShowVideo)
-	{
+	{		
 		m_program->bind();
 		m_impl->textureY->bind(0);
 		m_impl->textureU->bind(1);
@@ -233,7 +235,23 @@ void WOpenGLWidget::paintGL()
 
 		glBindVertexArray(m_VAO);//绑定VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		if (m_impl->textureY)
+		{
+			m_impl->textureY->release();
+		}
+		if (m_impl->textureU)
+		{
+			m_impl->textureU->release();
+		}
+		if (m_impl->textureV)
+		{
+			m_impl->textureV->release();
+		}
+		m_program->release();
 	}
+	m_mux.unlock();
 }
 
 void WOpenGLWidget::resizeGL(int w, int h)

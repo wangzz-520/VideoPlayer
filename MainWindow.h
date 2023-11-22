@@ -43,4 +43,5 @@ private:
 	SlideAnimationWidget *m_animationWidget = nullptr;
 
 	bool m_isInit = false;
+	bool m_isStop = false;	//ÊÇ·ñµã»÷Í£Ö¹²¥·Å
 };

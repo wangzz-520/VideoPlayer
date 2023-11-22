@@ -3,7 +3,6 @@
 #include <QDebug>
 #include <QElapsedTimer>
 
-
 WVideoThread::WVideoThread(QObject *parent /*= Q_NULLPTR*/)
 	: WDecodeThread(parent)
 {
@@ -123,6 +122,7 @@ void WVideoThread::setParams(int index, double timeBase, int width, int height)
 
 void WVideoThread::run()
 {
+	qDebug() << "*****WVideoThread run";
 	while (!m_isExit)
 	{
 		m_videoMutex.lock();
@@ -142,6 +142,12 @@ void WVideoThread::run()
 		}
 
 		AVPacket *pkt = pop();
+		if (!pkt)
+		{
+			m_videoMutex.unlock();
+			msleep(1);
+			continue;
+		}
 
 		bool ret = m_decode->send(pkt);
 		if (!ret)
@@ -150,6 +156,7 @@ void WVideoThread::run()
 			msleep(1);
 			continue;
 		}
+		
 		//一次send 多次recv
 		while (!m_isExit)
 		{
@@ -198,7 +205,8 @@ void WVideoThread::run()
 					}
 				}
 
-				int second = frame->pts * m_timeBase;
+				int second = frame->pts / 1000;
+				//qDebug() << "second = " << second << "  frame->pts = " << frame->pts << "m_timeBase  = " << m_timeBase;
 
 				m_timeFunc(second);
 				//发送信号，yuv数据
@@ -281,5 +289,8 @@ void WVideoThread::run()
 		}
 
 		m_videoMutex.unlock();
+		msleep(20);
 	}
+
+	qDebug() << "*****WVideoThread stop";
 }

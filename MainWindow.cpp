@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
 	this->setWindowTitle("WPlayer");
 	this->removeToolBar(ui.mainToolBar);
 	this->statusBar()->hide();
-	this->setMinimumSize(600, 400);
+	this->setMinimumSize(800, 600);
 
 	connect(ui.actionOpen, &QAction::triggered, this, &MainWindow::slotActionOpen);
 	connect(ui.actionOpenMore, &QAction::triggered, this, &MainWindow::slotActionOpenMore);
@@ -56,6 +56,7 @@ void MainWindow::slotActionOpen()
 	if (fileName.isEmpty())
 		return;
 
+	m_animationWidget->addList(fileName);
 	slotShowVideo(fileName);
 }
 
@@ -74,8 +75,20 @@ void MainWindow::slotActionOpenMore()
 
 void MainWindow::slotSetPause(bool isPause)
 {
-	if (m_demuxThread)
-		m_demuxThread->setPause(isPause);
+	if (m_animationWidget->getCurPlayFileName().isEmpty())
+		return;
+
+	if (!m_isStop)
+	{
+		if (m_demuxThread)
+			m_demuxThread->setPause(isPause);
+
+	}
+	else
+	{
+		m_isStop = false;
+		slotShowVideo(m_animationWidget->getCurPlayFileName());
+	}
 }
 
 void MainWindow::slotSeek(double pos)
@@ -117,7 +130,7 @@ void MainWindow::showEvent(QShowEvent *event)
 		return;
 
 	setWindowState(Qt::WindowFullScreen);
-	showMaximized();
+	showNormal();
 
 	m_isInit = true;
 }
@@ -137,6 +150,9 @@ void MainWindow::slotShowVideo(const QString &fileName)
 		std::placeholders::_1);
 
 	m_demuxThread->open(fileName.toStdString().c_str(), videoFunc, videoInfoFunc, totalTimeFunc, timeFunc);
+
+	if (!m_demuxThread->isRunning())
+		m_demuxThread->start();
 }
 /**
  * ÉÏÒ»¸ö.
@@ -169,4 +185,6 @@ void MainWindow::slotStop()
 
 	ui.openGLWidget->clear();
 	ui.ctrlBarWidget->clear();
+
+	m_isStop = true;
 }

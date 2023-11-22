@@ -31,6 +31,7 @@ public:
 	void addList(const QStringList &fileNames);
 	int curIndex();
 	QString getNextPlayFileName(bool isForWard);
+	QString getCurPlayFileName();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

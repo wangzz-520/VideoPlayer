@@ -42,6 +42,9 @@ private:
 
 	int m_width = 0;
 	int m_height = 0;
+
+	int64_t m_curPts = 0;
+	int64_t m_prePts = 0;
 };
 
 #endif // !_WVIDEOTHREAD_H_

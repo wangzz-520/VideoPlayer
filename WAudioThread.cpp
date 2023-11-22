@@ -87,8 +87,8 @@ void WAudioThread::close()
 	if (m_swrContext)
 	{
 		m_audioMutex.lock();
+		swr_close(m_swrContext);
 		swr_free(&m_swrContext);
-		delete m_swrContext;
 		m_swrContext = NULL;
 		m_audioMutex.unlock();
 	}
@@ -115,6 +115,7 @@ void WAudioThread::clear()
 
 void WAudioThread::run()
 {
+	qDebug() << "*****WAudioThread run";
 	// 分配输出音频数据
 	uint8_t **out_data = NULL;
 
@@ -187,4 +188,6 @@ void WAudioThread::run()
 		m_audioMutex.unlock();
 		//msleep(10);
 	}
+
+	qDebug() << "*****WAudioThread stop";
 }

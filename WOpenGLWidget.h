@@ -12,6 +12,7 @@
 #include <QMouseEvent>
 #include <QSet>
 #include <QPainter>
+#include <QMutex>
 
 class OpenGLDisplayImpl
 {
@@ -60,6 +61,7 @@ private:
 
 	OpenGLDisplayImpl *m_impl = nullptr;
 	bool m_isShowVideo = false;
+	QMutex m_mux;
 };
 
 #endif // WOPENGLWIDGET_H

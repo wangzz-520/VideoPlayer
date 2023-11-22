@@ -84,10 +84,14 @@ void WCtrlBarWidget::slotStartPlay(int totalSec)
 
 void WCtrlBarWidget::clear()
 {
-	QTime TotalTime;
+	QTime TotalTime(0,0,0);
 	ui.playSlider->setValue(0);
+	ui.videoTotalTimeTimeEdit->setTime(TotalTime);
 	ui.videoPlayTimeTimeEdit->setTime(TotalTime);
-	ui.videoPlayTimeTimeEdit->setTime(TotalTime);
+
+	m_isStartPlay = false;
+	ui.btnPlayOrPause->setStyleSheet(playStyle);
+	ui.btnPlayOrPause->setToolTip("²¥·Å");
 }
 
 void WCtrlBarWidget::slotPlayOrPause()

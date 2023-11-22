@@ -1,5 +1,6 @@
 #include "WDecodeThread.h"
 #include "WDecode.h"
+#include <QDebug>
 
 WDecodeThread::WDecodeThread(QObject *parent /*= Q_NULLPTR*/)
 	: QThread(parent)
@@ -11,23 +12,30 @@ WDecodeThread::~WDecodeThread()
 {
 }
 
+static int index = 0;
 void WDecodeThread::push(AVPacket *pkt)
 {
 	if (!pkt)
 		return;
 
-	while (!m_isExit)
-	{
-		m_mutex.lock();
-		if (m_queue.size() < m_maxList)
-		{
-			m_queue.enqueue(pkt);
-			m_mutex.unlock();
-			break;
-		}
-		m_mutex.unlock();
-		msleep(1);
-	}
+	m_mutex.lock();
+	m_queue.enqueue(pkt);
+	m_mutex.unlock();
+
+	//while (!m_isExit)
+	//{
+	//	m_mutex.lock();
+	//	if (m_queue.size() < m_maxList)
+	//	{
+	//		m_queue.enqueue(pkt);
+	//		//if (m_index == 0)
+	//		//	qDebug() << "==========push video index = " << pkt->pts;
+	//		m_mutex.unlock();
+	//		break;
+	//	}
+	//	m_mutex.unlock();
+	//	msleep(1);
+	//}
 }
 
 AVPacket * WDecodeThread::pop()

@@ -48,5 +48,7 @@ typedef std::function<void(int)> TimeFunc;
 #define SLIDE_MAX_WIDTH 300     //侧边栏滑出最大的宽度
 #define POS_X 20
 #define POS_Y 26
+#define MIN_SYNC_THRESHOLD 10
+#define MAX_SYNC_THRESHOLD 100
 
 #endif // _GLOBAL_H_

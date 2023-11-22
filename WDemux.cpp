@@ -1,5 +1,6 @@
 #include "WDemux.h"
 #include <QDebug>
+#include <QElapsedTimer>
 
 WDemux::WDemux()
 {
@@ -21,9 +22,10 @@ bool WDemux::open(const char *url, TotalTimeFunc totalTimeFunc)
 	AVDictionary *opts = NULL;
 	//设置rtsp流已tcp协议打开
 	av_dict_set(&opts, "rtsp_transport", "tcp", 0);
-
-	//网络延时时间
 	av_dict_set(&opts, "max_delay", "500", 0);
+	av_dict_set(&opts, "buffer_size", "1024000", 0);
+	av_dict_set(&opts, "probsize", "4096", 0);
+	av_dict_set(&opts, "fps", "25", 0);
 
 	m_mux.lock();
 	//打开输入视频文件
@@ -74,10 +76,10 @@ bool WDemux::open(const char *url, TotalTimeFunc totalTimeFunc)
 
 	//获取帧率;
 	m_fps = r2d(m_pFormatCtx->streams[m_videoIndex]->avg_frame_rate);
-	if (m_fps == 0)
-	{
-		m_fps = 25;
-	}
+	//if (m_fps == 0)
+	//{
+	//	m_fps = 25;
+	//}
 
 	m_vTimeBase = r2d(m_pFormatCtx->streams[m_videoIndex]->time_base);
 
@@ -134,8 +136,8 @@ AVPacket * WDemux::read()
 		return 0;
 	}
 	//pts转换为毫秒
-	//pkt->pts = pkt->pts*(1000 * (r2d(m_pFormatCtx->streams[pkt->stream_index]->time_base)));
-	//pkt->dts = pkt->dts*(1000 * (r2d(m_pFormatCtx->streams[pkt->stream_index]->time_base)));
+	pkt->pts = pkt->pts*(1000 * (r2d(m_pFormatCtx->streams[pkt->stream_index]->time_base)));
+	pkt->dts = pkt->dts*(1000 * (r2d(m_pFormatCtx->streams[pkt->stream_index]->time_base)));
 	m_mux.unlock();
 	return pkt;
 }

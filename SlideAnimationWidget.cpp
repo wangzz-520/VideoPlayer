@@ -74,6 +74,7 @@ void SlideAnimationWidget::addList(const QString &fileName)
 	}
 
 	m_model->setStringList(nameList);
+	ui->listView->setCurrentIndex(m_model->index(0));
 }
 
 void SlideAnimationWidget::addList(const QStringList &fileNames)
@@ -139,6 +140,16 @@ QString SlideAnimationWidget::getNextPlayFileName(bool isForWard)
 			return m_map.value(row - 1);
 		}
 	}
+}
+
+QString SlideAnimationWidget::getCurPlayFileName()
+{
+	int rows = m_model->rowCount();
+	if (!rows)
+		return QString();
+
+	int row = ui->listView->currentIndex().row();
+	return m_map.value(row);
 }
 
 bool SlideAnimationWidget::eventFilter(QObject *obj, QEvent *event)
@@ -207,6 +218,8 @@ void SlideAnimationWidget::slotSlideInFinished()
 
 void SlideAnimationWidget::slotDoubleClicked(const QModelIndex &index)
 {
-	emit sigShowVideo(m_map.value(m_model->data(index).toInt()));
+	int d = index.row();
+	QString fileName = m_map.value(d);
+	emit sigShowVideo(fileName);
 	ui->listView->setCurrentIndex(index);
 }

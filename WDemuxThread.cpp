@@ -2,6 +2,7 @@
 #include "WDemux.h"
 #include "WAudioThread.h"
 #include "WVideoThread.h"
+#include <QElapsedTimer>
 
 WDemuxThread::WDemuxThread(QObject *parent /*= Q_NULLPTR*/)
 	: QThread(parent)
@@ -159,9 +160,13 @@ void WDemuxThread::clear()
 
 void WDemuxThread::run()
 {
+	qDebug() << "*****WDemuxThread run";
+	m_isExit = false;
 	while (!m_isExit)
 	{
 		m_mutex.lock();
+		QElapsedTimer timer;
+		timer.start();
 		if (m_isPause)
 		{
 			m_mutex.unlock();
@@ -190,10 +195,11 @@ void WDemuxThread::run()
 			msleep(5);
 			continue;
 		}
+
 		//判断数据是音频
 		if (m_demux->isAudio(pkt))
 		{
-			if (m_audioThread) 
+			if (m_audioThread)
 				m_audioThread->push(pkt);
 		}
 		else //视频
@@ -202,7 +208,9 @@ void WDemuxThread::run()
 				m_videoThread->push(pkt);
 		}
 
+		//qDebug() << "The slow operation took" << timer.elapsed() << "milliseconds";
 		m_mutex.unlock();
-		msleep(1);
 	}
+
+	qDebug() << "*****WDemuxThread stop";
 }
