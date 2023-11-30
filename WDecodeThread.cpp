@@ -12,42 +12,35 @@ WDecodeThread::~WDecodeThread()
 {
 }
 
-static int index = 0;
 void WDecodeThread::push(AVPacket *pkt)
 {
 	if (!pkt)
 		return;
 
-	m_mutex.lock();
-	m_queue.enqueue(pkt);
-	m_mutex.unlock();
-
-	//while (!m_isExit)
-	//{
-	//	m_mutex.lock();
-	//	if (m_queue.size() < m_maxList)
-	//	{
-	//		m_queue.enqueue(pkt);
-	//		//if (m_index == 0)
-	//		//	qDebug() << "==========push video index = " << pkt->pts;
-	//		m_mutex.unlock();
-	//		break;
-	//	}
-	//	m_mutex.unlock();
-	//	msleep(1);
-	//}
+	while (!m_isExit)
+	{
+		m_mutex.lock();
+		if (m_queue.size() < m_maxList)
+		{
+			m_queue.push(pkt);
+			m_mutex.unlock();
+			break;
+		}
+		m_mutex.unlock();
+		msleep(1);
+	}
 }
 
 AVPacket * WDecodeThread::pop()
 {
 	m_mutex.lock();
-	if (m_queue.isEmpty())
+	if (!m_queue.size())
 	{
 		m_mutex.unlock();
 		return NULL;
 	}
-
-	AVPacket *pkt = m_queue.dequeue();
+	AVPacket *pkt = m_queue.front();
+	m_queue.pop();
 	m_mutex.unlock();
 	return pkt;
 }
@@ -78,7 +71,9 @@ void WDecodeThread::clear()
 		m_decode->clear();
 	while (!m_queue.empty())
 	{
-		AVPacket * pkt = m_queue.dequeue();
+		AVPacket *pkt = m_queue.front();
+		m_queue.pop();
+		//AVPacket * pkt = m_queue.dequeue();
 		if (!pkt)
 			continue;
 

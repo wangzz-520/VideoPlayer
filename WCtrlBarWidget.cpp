@@ -47,6 +47,7 @@ WCtrlBarWidget::WCtrlBarWidget(QWidget *parent)
 	connect(ui.btnVolume, &QPushButton::clicked, this, &WCtrlBarWidget::slotVolume);
 
 	connect(ui.playSlider, &WCustomSlider::sigCustomSliderValueChanged, this, &WCtrlBarWidget::sigSeek);
+	connect(ui.volumeSlider, &WCustomSlider::sigCustomSliderValueChanged, this, &WCtrlBarWidget::sigVolumn);
 }
 
 WCtrlBarWidget::~WCtrlBarWidget()
@@ -114,5 +115,6 @@ void WCtrlBarWidget::slotPlayOrPause()
 
 void WCtrlBarWidget::slotVolume()
 {
-
+	emit sigVolumn(0);
+	ui.volumeSlider->setValue(0);
 }

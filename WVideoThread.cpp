@@ -62,7 +62,7 @@ void WVideoThread::setPause(bool isPause)
 	m_videoMutex.unlock();
 }
 
-bool WVideoThread::repaintPts(AVPacket *pkt, long long seekpts)
+bool WVideoThread::repaintPts(AVPacket *pkt)
 {
 	m_videoMutex.lock();
 	bool re = m_decode->send(pkt);
@@ -77,36 +77,37 @@ bool WVideoThread::repaintPts(AVPacket *pkt, long long seekpts)
 		m_videoMutex.unlock();
 		return false;
 	}
-	uint8_t* buffer = NULL;
-	//到达位置
-	if (m_decode->m_pts >= seekpts)
-	{
-		if (m_func)
-		{
-			int width = frame->width;
-			int height = frame->height;
-
-			int ySize = frame->width * frame->height;
-			int uvSize = ySize / 4;
-			int totalSize = ySize + 2 * uvSize;
 	
-			buffer = new uint8_t[totalSize];
-			memset(buffer, 0, sizeof(buffer));
-			// 拷贝YUV420P数据到缓冲区
-			memcpy(buffer, frame->data[0], ySize); // 拷贝Y分量
-			memcpy(buffer + ySize, frame->data[1], uvSize); // 拷贝U分量
-			memcpy(buffer + ySize + uvSize, frame->data[2], uvSize); // 拷贝V分量
-			m_func(buffer);
-		}
-			
-		m_videoMutex.unlock();
-		return true;
-	}
+	if (m_func)
+	{
+		uint8_t* buffer = NULL;
+		int width = frame->width;
+		int height = frame->height;
 
+		int ySize = frame->width * frame->height;
+		int uvSize = ySize / 4;
+		int totalSize = ySize + 2 * uvSize;
+	
+		buffer = new uint8_t[totalSize];
+		memset(buffer, 0, sizeof(buffer));
+		// 拷贝YUV420P数据到缓冲区
+		memcpy(buffer, frame->data[0], ySize); // 拷贝Y分量
+		memcpy(buffer + ySize, frame->data[1], uvSize); // 拷贝U分量
+		memcpy(buffer + ySize + uvSize, frame->data[2], uvSize); // 拷贝V分量
+
+		int second = frame->pts / 1000;
+		//qDebug() << "second = " << second << "  frame->pts = " << frame->pts << "m_timeBase  = " << m_timeBase;
+
+		m_timeFunc(second);
+		m_func(buffer);
+
+		delete[]buffer;
+	}
+		
 	av_frame_free(&frame);
-	delete[]buffer;
 	m_videoMutex.unlock();
-	return false;
+
+	return true;
 }
 
 void WVideoThread::setParams(int index, double timeBase, int width, int height)
@@ -123,6 +124,7 @@ void WVideoThread::setParams(int index, double timeBase, int width, int height)
 void WVideoThread::run()
 {
 	qDebug() << "*****WVideoThread run";
+	m_isFindKey = false;
 	while (!m_isExit)
 	{
 		m_videoMutex.lock();
@@ -147,6 +149,21 @@ void WVideoThread::run()
 			m_videoMutex.unlock();
 			msleep(1);
 			continue;
+		}
+
+		if (!m_isFindKey)
+		{
+			if (pkt->flags & AV_PKT_FLAG_KEY) // is keyframe
+			{
+				m_isFindKey = true;
+			}
+			else
+			{
+				av_packet_free(&pkt);
+				m_videoMutex.unlock();
+				msleep(1);
+				continue;
+			}
 		}
 
 		bool ret = m_decode->send(pkt);

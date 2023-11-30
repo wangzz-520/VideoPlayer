@@ -186,7 +186,7 @@ void WAudioThread::run()
 			break;
 		}
 		m_audioMutex.unlock();
-		//msleep(10);
+		msleep(5);
 	}
 
 	qDebug() << "*****WAudioThread stop";

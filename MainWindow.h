@@ -21,6 +21,7 @@ private slots:
 	void slotActionOpenMore();
 	void slotSetPause(bool isPause);
 	void slotSeek(double pos);
+	void slotVolumn(double pos);
 
 protected:
 	//Ë«»÷È«ÆÁ

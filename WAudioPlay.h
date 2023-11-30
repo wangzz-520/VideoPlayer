@@ -16,6 +16,7 @@ public:
 	virtual bool open() = 0;
 	virtual void close() = 0;
 	virtual void clear() = 0;
+	virtual void setVolume(double pos) = 0;
 
 	//返回缓冲中还没有播放的时间（毫秒）
 	virtual long long getNoPlayMs() = 0;

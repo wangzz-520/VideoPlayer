@@ -52,32 +52,15 @@ WOpenGLWidget::~WOpenGLWidget()
 
 void WOpenGLWidget::slotOpenVideo(int width, int height)
 {
+	qDebug() << "slotOpenVideo";
 	m_mux.lock();
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 	m_isShowVideo = false;
 	m_impl->videoW = width;
 	m_impl->videoH = height;
 
-	if (m_impl->buffer[0])
-	{
-		delete []m_impl->buffer[0];
-		m_impl->buffer[0] = nullptr;	
-	}
-
-	if (m_impl->buffer[1])
-	{
-		delete[]m_impl->buffer[1];
-		m_impl->buffer[1] = nullptr;
-	}
-
-	if (m_impl->buffer[2])
-	{
-		delete[]m_impl->buffer[2];
-		m_impl->buffer[2] = nullptr;	
-	}
-
-	m_impl->buffer[0] = new unsigned char[width * height];//y
-	m_impl->buffer[1] = new unsigned char[width * height / 4];//u
-	m_impl->buffer[2] = new unsigned char[width * height / 4];//v
+	deleteBuffer();
 
 	resize(this->width(), this->height());
 
@@ -91,11 +74,20 @@ void WOpenGLWidget::slotReceiveVideoData(uint8_t* yuvBuffer)
 		return;
 
 	m_mux.lock();
+	if(!m_impl->buffer[0])
+		m_impl->buffer[0] = new unsigned char[m_impl->videoW * m_impl->videoH];//y
+
+	if (!m_impl->buffer[1])
+		m_impl->buffer[1] = new unsigned char[m_impl->videoW * m_impl->videoH / 4];//u
+
+	if (!m_impl->buffer[2])
+		m_impl->buffer[2] = new unsigned char[m_impl->videoW * m_impl->videoH / 4];//v
+
 	memcpy(m_impl->buffer[0], yuvBuffer, m_impl->videoW * m_impl->videoH);
-	memcpy(m_impl->buffer[1], yuvBuffer+ m_impl->videoW * m_impl->videoH, 
-		m_impl->videoW * m_impl->videoH /4);
-	memcpy(m_impl->buffer[2], yuvBuffer+ 5 * m_impl->videoW * m_impl->videoH / 4, 
-		m_impl->videoW * m_impl->videoH /4);
+	memcpy(m_impl->buffer[1], yuvBuffer + m_impl->videoW * m_impl->videoH,
+		m_impl->videoW * m_impl->videoH / 4);
+	memcpy(m_impl->buffer[2], yuvBuffer + 5 * m_impl->videoW * m_impl->videoH / 4,
+		m_impl->videoW * m_impl->videoH / 4);
 	m_mux.unlock();
 	update();
 }
@@ -104,6 +96,14 @@ void WOpenGLWidget::slotReceiveVideoData(uint8_t* yuvBuffer)
 void WOpenGLWidget::clear()
 {
 	m_mux.lock();
+
+	deleteBuffer();
+	m_isShowVideo = false;
+	m_mux.unlock();
+}
+
+void WOpenGLWidget::deleteBuffer()
+{
 	if (m_impl)
 	{
 		if (m_impl->buffer[0]) {
@@ -121,9 +121,6 @@ void WOpenGLWidget::clear()
 			m_impl->buffer[2] = nullptr;
 		}
 	}
-
-	m_isShowVideo = false;
-	m_mux.unlock();
 }
 
 void WOpenGLWidget::initializeGL()
@@ -184,8 +181,6 @@ void WOpenGLWidget::initializeGL()
 
 void WOpenGLWidget::paintGL()
 {
-	qDebug()<<"paintGL";
-	
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 

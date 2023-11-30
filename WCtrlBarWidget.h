@@ -14,6 +14,7 @@ public:
 signals:
 	void sigPause(bool pause);
 	void sigSeek(double pos);
+	void sigVolumn(double pos);
 	void sigBackward();
 	void sigForward();
 	void sigStop();

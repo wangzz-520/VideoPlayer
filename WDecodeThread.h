@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QQueue>
 #include <QMutex>
+#include <queue>
 #include "global.h"
 
 class WDecode;
@@ -28,7 +29,7 @@ public:
 protected:
 	WDecode *m_decode = nullptr;
 	bool m_isExit = false;
-	QQueue <AVPacket *> m_queue;
+	std::queue <AVPacket *> m_queue;
 	QMutex m_mutex;
 
 	int m_maxList = 100;

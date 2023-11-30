@@ -21,7 +21,7 @@ public:
 	void setPause(bool isPause);
 
 	//解码pts，如果接收到的解码数据pts >= seekpts return true 并且显示画面
-	virtual bool repaintPts(AVPacket *pkt, long long seekpts);
+	virtual bool repaintPts(AVPacket *pkt);
 
 	virtual void setParams(int index, double timeBase,int width,int height);
 
@@ -45,6 +45,8 @@ private:
 
 	int64_t m_curPts = 0;
 	int64_t m_prePts = 0;
+
+	bool m_isFindKey = false;
 };
 
 #endif // !_WVIDEOTHREAD_H_

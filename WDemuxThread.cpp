@@ -112,15 +112,18 @@ void WDemuxThread::seek(double pos)
 	m_mutex.lock();
 	if (m_demux)
 		m_demux->seek(pos);
+
 	//实际要显示的位置pts
 	long long seekPts = pos * m_demux->m_totalTime;
+	seekPts *= 1000;	//ms
+
 	while (!m_isExit)
 	{
 		AVPacket *pkt = m_demux->readVideo();
 		if (!pkt)
 			break;
 		//如果解码到seekPts
-		if (m_videoThread->repaintPts(pkt, seekPts))
+		if (m_videoThread->repaintPts(pkt))
 		{
 			this->m_pts = seekPts;
 			break;
@@ -158,6 +161,7 @@ void WDemuxThread::clear()
 	m_mutex.unlock();
 }
 
+static int index = 0;
 void WDemuxThread::run()
 {
 	qDebug() << "*****WDemuxThread run";
@@ -165,8 +169,7 @@ void WDemuxThread::run()
 	while (!m_isExit)
 	{
 		m_mutex.lock();
-		QElapsedTimer timer;
-		timer.start();
+
 		if (m_isPause)
 		{
 			m_mutex.unlock();
@@ -207,8 +210,7 @@ void WDemuxThread::run()
 			if (m_videoThread)
 				m_videoThread->push(pkt);
 		}
-
-		//qDebug() << "The slow operation took" << timer.elapsed() << "milliseconds";
+		//qDebug() << "read frame = " << index++;
 		m_mutex.unlock();
 	}
 

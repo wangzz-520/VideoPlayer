@@ -243,11 +243,11 @@ AVPacket * WDemux::readVideo()
 
 	AVPacket *pkt = NULL;
 	//·ÀÖ¹×èÈû
-	for (int i = 0; i < 20; i++)
+	for (int i = 0; i < 50; i++)
 	{
 		pkt = read();
 		if (!pkt)
-			break;
+			continue;
 
 		if (pkt->stream_index == m_videoIndex)
 		{

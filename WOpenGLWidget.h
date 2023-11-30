@@ -46,6 +46,7 @@ public:
 	void slotOpenVideo(int width,int height);
 	void slotReceiveVideoData(uint8_t* yuvBuffer);
 	void clear();
+	void deleteBuffer();
 
 protected:
     virtual void initializeGL();

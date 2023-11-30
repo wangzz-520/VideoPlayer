@@ -16,6 +16,12 @@ void WCustomSlider::mousePressEvent(QMouseEvent *ev)
     QSlider::mousePressEvent(ev);
     //获取鼠标的位置，这里并不能直接从ev中取值（因为如果是拖动的话，鼠标开始点击的位置没有意义了）
     double pos = ev->pos().x() / (double)width();
+	if (pos >= 1)
+		pos = 1;
+
+	if (pos <= 0)
+		pos = 0;
+
     setValue(pos * (maximum() - minimum()) + minimum());
 
     emit sigCustomSliderValueChanged(pos);
@@ -37,6 +43,13 @@ void WCustomSlider::mouseMoveEvent(QMouseEvent *ev)
     {
         //获取鼠标的位置，这里并不能直接从ev中取值（因为如果是拖动的话，鼠标开始点击的位置没有意义了）
         double pos = ev->pos().x() / (double)width();
+
+		if (pos >= 1)
+			pos = 1;
+
+		if (pos <= 0)
+			pos = 0;
+
         setValue(pos * (maximum() - minimum()) + minimum());
 
         emit sigCustomSliderValueChanged(pos);

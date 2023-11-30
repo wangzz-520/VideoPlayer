@@ -4,6 +4,8 @@
 #include <QAction>
 #include "WDemuxThread.h"
 #include "SlideAnimationWidget.h"
+#include "WAudioPlay.h"
+#include <QAudio>
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -26,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui.ctrlBarWidget, &WCtrlBarWidget::sigBackward, this, &MainWindow::slotBackward);
 	connect(ui.ctrlBarWidget, &WCtrlBarWidget::sigForward, this, &MainWindow::slotForward);
 	connect(ui.ctrlBarWidget, &WCtrlBarWidget::sigStop, this, &MainWindow::slotStop);
+	connect(ui.ctrlBarWidget, &WCtrlBarWidget::sigVolumn, this, &MainWindow::slotVolumn);
 
 	if (!m_demuxThread)
 	{
@@ -95,6 +98,18 @@ void MainWindow::slotSeek(double pos)
 {
 	if (m_demuxThread)
 		m_demuxThread->seek(pos);
+}
+
+void MainWindow::slotVolumn(double pos)
+{
+	pos *= 100;
+	qreal linearVolume = QAudio::convertVolume(pos  / qreal(100.0),
+		QAudio::LogarithmicVolumeScale,
+		QAudio::LinearVolumeScale);
+
+	//qDebug() << "pos = " << pos << " linearVolume = " << linearVolume << " qRound(linearVolume * 100) = " << qRound(linearVolume * 100);
+
+	WAudioPlay::getInstance()->setVolume(qRound(linearVolume * 100));
 }
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *e)

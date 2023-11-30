@@ -113,6 +113,18 @@ public:
 		return true;
 	}
 
+	virtual void setVolume(qreal volume)
+	{
+		m_mux.lock();
+		if (!output)
+		{
+			m_mux.unlock();
+			return;
+		}
+		output->setVolume(volume);
+		m_mux.unlock();
+	}
+
 	virtual int getFree()
 	{
 		m_mux.lock();

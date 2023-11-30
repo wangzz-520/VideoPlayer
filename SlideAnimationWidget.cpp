@@ -60,28 +60,19 @@ void SlideAnimationWidget::stopAnimation()
 
 void SlideAnimationWidget::addList(const QString &fileName)
 {
-	QStringList stringList = m_model->stringList();
-	stringList << fileName;
-
-	m_map.clear();
-
-	QStringList nameList;
-	for (int i = 0; i < stringList.size(); i++)
-	{
-		QStringList ls = stringList.at(i).split('/');
-		nameList << ls.at(ls.size() - 1);
-		m_map.insert(i, stringList.at(i));
-	}
-
-	m_model->setStringList(nameList);
-	ui->listView->setCurrentIndex(m_model->index(0));
+	addList(QStringList() << fileName);
 }
 
 void SlideAnimationWidget::addList(const QStringList &fileNames)
 {
 	QStringList stringList = m_model->stringList();
-	stringList << fileNames;
 
+	for (int i = 0; i < fileNames.size(); i++)
+	{
+		if (!stringList.contains(fileNames.at(i)))
+			stringList.push_front(fileNames.at(i));
+	}
+	
 	m_map.clear();
 
 	QStringList nameList;
